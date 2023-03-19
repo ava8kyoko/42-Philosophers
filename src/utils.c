@@ -1,5 +1,22 @@
 #include "../philo.h"
 
+// Check if philo is dead
+// if not print what he's doing
+long int	get_time(t_philo *p, char ms)
+{
+	struct timeval	time;
+
+	if (ms == MS)
+	{
+		pthread_mutex_lock(&p->t->main);
+		return (get_time(0, MAIN_UNLOCK) - p->t->time);
+	}
+	if (ms == MAIN_UNLOCK)
+		pthread_mutex_unlock(&p->t->main);
+	gettimeofday(&time, NULL);
+	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
+}
+
 int	ft_atoi(const char *str)
 {
 	long	sign;

@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: acid.burn <acid.burn@student.42.fr>        +#+  +:+       +#+         #
+#    By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/23 09:25:26 by mchampag          #+#    #+#              #
-#    Updated: 2023/03/14 17:25:11 by acid.burn        ###   ########.fr        #
+#    Updated: 2023/03/18 16:10:00 by mchampag         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,12 +17,12 @@ NAME = philo
 AR = ar
 CC = gcc
 ARFLAG = rcs
-CFLAG = -Wall -Wextra -Werror -g
+CFLAG = -Wall -Wextra -Werror -g -fsanitize=thread
 LDFLAGS = -phtread -lpthread
 
 # Files sources
 S = src/
-SRC_FILE =	main.c routine.c utils.c
+SRC_FILE = main.c routine.c utils.c
 SRC = $(addprefix $S, $(SRC_FILE))
 
 # Object conversion

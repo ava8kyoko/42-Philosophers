@@ -1,93 +1,107 @@
 #include "../philo.h"
 
-// Check if philo is dead
-// if not print what he's doing
-long int	get_time(t_philo *p, bool ms)
-{
-	struct timeval	time;
-
-	if (ms)
-		return (get_time(0, 0) - p->t->time);
-	gettimeofday(&time, NULL);
-	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
-}
-
-static bool	is_dead_print(t_philo *p, char fork, char *state)
-{
-	pthread_mutex_lock(&p->t->lock);
-	if (p->t->dead == true)
-	{
-		pthread_mutex_unlock(&p->t->lock);
-		if (fork == LEFT || fork == LEFT_RIGHT)
-			pthread_mutex_unlock(&p->fork_left);
-		if (fork == RIGHT || fork == LEFT_RIGHT)
-			pthread_mutex_unlock(p->fork_right);
-		return (true);
-	}
-	printf("%lu %d %s\n", get_time(p, MS), p->philo, state);
-	pthread_mutex_unlock(&p->t->lock);
-	return (false);
-}
-
-static bool	is_sleeping(t_philo *p, long int time_to_stop, bool sleeping)
+static bool	sleep(t_philo *p);
 {
 	long int	delay;
+	long int	time_to_stop;
 
+	if (sleeping)
+	{
+		pthread_mutex_lock(&p->t->main);
+		time_to_stop = p->time_last_meal + p->t->time_eat;
+		pthread_mutex_unlock(&p->t->main);
+	}
+	else
+	{
+		pthread_mutex_lock(&p->t->main);
+		time_to_stop =  p->time_last_meal + p->t->time_sleep + p->t->time_eat;
+		pthread_mutex_unlock(&p->t->main);
+	}
 	while (1)
 	{
 		delay = time_to_stop - get_time(0, 0);
 		if (delay <= 0)
 			break ;
-		usleep(500);
+		usleep(20);
 	}
-	if (sleeping)
-	{
-		pthread_mutex_unlock(&p->fork_left);
-		pthread_mutex_unlock(p->fork_right);
-		if (p->t->dead == true)
-			return (true);
-		printf("%lu %d is sleeping!\n", get_time(p, MS), p->philo);
-		pthread_mutex_unlock(&p->t->lock);
-	}
+}
+
+static bool	print_state(t_philo *p, char *state) // char fork
+{
+	pthread_mutex_lock(&p->print);
+	printf("%lu %d %s\n", get_time(p, MS), p->philo, state);
+	pthread_mutex_unlock(&p->print);
 	return (false);
 }
 
-static bool	is_taking_forks_eating(t_philo *p)
+static bool	is_eating_sleeping(t_philo *p, bool sleeping)
 {
-	pthread_mutex_lock(&p->fork_left);
-	if (is_dead_print(p, LEFT, "has taken a fork"))
-		return (true);
-	pthread_mutex_lock(p->fork_right);
+
 	p->time_last_meal = get_time(0, 0);
-	if (is_dead_print(p, LEFT_RIGHT, "has taken a fork"))
-		return (true);
-	if (is_dead_print(p, LEFT_RIGHT, "is eating!"))
-		return (true);
+	print_state(p, "is eating");
+	pthread_mutex_lock(&p->t->main);
 	if (p->t->nbr_meal != -1) 
+	{
+		pthread_mutex_lock(&p->t->main);
 		p->meal_to_eat -= 1;
+		pthread_mutex_unlock(&p->t->main);
+	}
+	pthread_mutex_unlock(&p->t->main);
 	// if (p->eated_meal == p->meal_count)
 	// 	return (true);
+	pthread_mutex_unlock(&p->fork_left);
+	pthread_mutex_unlock(p->fork_right);
+	pthread_mutex_lock(&p->t->main);
+	if (p->t->dead == true)
+	{
+		pthread_mutex_unlock(&p->t->main);
+		return (true);
+	}
+	pthread_mutex_lock(&p->t->main);
+	print_state(p, "is sleeping");
 	return (false);
 }
+
+static bool	is_taking_forks(t_philo *p)
+{
+	if (is_dead(p))
+		return (true);
+	pthread_mutex_lock(&p->forks);
+	if (p->forks_are_free == true)
+	{
+		pthread_mutex_lock(&p->forks);
+		pthread_mutex_lock(p->fork_right);
+		print_state(p, "has taken a fork");
+		if (is_dead(p))
+			return (true);
+		pthread_mutex_lock(&p->forks);
+		p->forks_are_free = false;
+		pthread_mutex_unlock(&p->forks);
+		pthread_mutex_lock(&p->fork_left);
+		print_state(p, "has taken a fork");
+		return (true);
+	}
+	pthread_mutex_unlock(&p->forks);
+	return (false);
+}	
 
 void	*philosophers_routine(void *arg)
 {
 	t_philo	*p;
 
 	p = arg;
-	if (p->philo % 2 == 0)
-		usleep(500); // 450
+	pthread_mutex_lock(&p->t->main);
 	p->time_last_meal = p->t->time;
+	pthread_mutex_unlock(&p->t->main);
 	while (1)
 	{
-		if (is_taking_forks_eating(p)
-			|| is_sleeping(p, p->time_last_meal + p->t->time_eat, SLEEPING)
-			|| p->meal_to_eat == 0)  // check if necessary
+		if (is_taking_forks(p)
+			|| is_eating_sleeping(p, SLEEPING))
+			break;
+		if (p->meal_to_eat == 0)  // check if necessary
 			break ;
-		is_sleeping(p, p->time_last_meal + p->t->time_sleep + p->t->time_eat, 0);
-		if (is_dead_print(p, 0, "is thinking!"))
-			break ;
+		is_eating_sleeping(p, 0);
+		print_state(p, "is thinking");
 	}
-	p->t->end -= 1;
 	return ((void*)0);
 }
