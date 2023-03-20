@@ -1,63 +1,64 @@
 #include "../philo.h"
 
-static bool	sleep(t_philo *p);
+static void	need_to_sleep(t_philo *p)
 {
-	long int	delay;
 	long int	time_to_stop;
+	long int	delay;
 
-	if (state = eating)
-	{
-		pthread_mutex_lock(&p->t->main);
-		time_to_stop =  p->time_last_meal + p->t->time_sleep + p->t->time_eat;
-		pthread_mutex_unlock(&p->t->main);
-	}
-	else if (sleeping)
-	{
-		pthread_mutex_lock(&p->t->main);
-		time_to_stop = p->time_last_meal + p->t->time_eat;
-		pthread_mutex_unlock(&p->t->main);
-	}
+	time_to_stop = 0;
+	if (p->state == EAT)
+		time_to_stop =  p->time_last_meal + p->time_to_eat;
+	else if (p->state == SLEEP)
+		time_to_stop = p->time_to_sleep;
 	while (1)
 	{
 		delay = time_to_stop - get_time(0, 0);
 		if (delay <= 0)
 			break;
-		usleep(20);
+		usleep(10000);
 	}
 }
 
-bool	print_state(t_philo *p, char *state) // char fork
+static bool is_sleeping(t_philo *p)
 {
-	pthread_mutex_lock(&p->print);
-	printf("%lu %d %s\n", get_time(p, MS), p->philo, state);
-	pthread_mutex_unlock(&p->print);
-	return (false);
+	if (p->state == SLEEP)
+	{
+		pthread_mutex_lock(&p->t->main);
+		if (p->t->dead == true)
+		{
+			pthread_mutex_unlock(&p->t->main); // ????
+			return (false);
+		}
+		pthread_mutex_unlock(&p->t->main);
+		print_state(p, "is sleeping");
+		need_to_sleep(p);
+		
+	}
+	return (true);
 }
 
 // When a hungry philosopher has both his forks at the same time, he eats
 // without relasing his forks. When he has finised eating, he puts down
 // both of his forks and starts thinking again.
-static bool	is_eating_sleeping(t_philo *p, bool sleeping)
+static bool	is_eating(t_philo *p)
 {
-
-	p->time_last_meal = get_time(0, 0);
-	print_state(p, "is eating");
-	if (p->meal_to_eat != -1) 
+	if (p->state == EAT)
 	{
-		p->meal_to_eat -= 1;
-		if (p->meal_to_eat == 0)
+		if (is_dead(p))
 			return (false);
+		p->time_last_meal = get_time(0, 0);
+		if (p->meal_to_eat != -1) 
+		{
+			p->meal_to_eat -= 1;
+			if (p->meal_to_eat == 0)
+				return (false);
+		}
+		print_state(p, "is eating");
+		need_to_sleep(p);
+		pthread_mutex_unlock(&p->fork_left);
+		pthread_mutex_unlock(p->fork_right);
+		p->state = SLEEP;
 	}
-	pthread_mutex_unlock(&p->fork_left);
-	pthread_mutex_unlock(p->fork_right);
-	pthread_mutex_lock(&p->t->main);
-	if (p->t->dead == true)
-	{
-		pthread_mutex_unlock(&p->t->main);
-		return (false);
-	}
-	pthread_mutex_lock(&p->t->main);
-	print_state(p, "is sleeping");
 	return (true);
 }
 
@@ -69,23 +70,29 @@ static bool	is_taking_forks(t_philo *p)
 {
 	if (is_dead(p))
 		return (true);
-	pthread_mutex_lock(&p->forks);
-	if (p->forks_are_free == true)
+	if (p->state == THINK || p->state == FORK_RIGHT)
 	{
-		pthread_mutex_lock(&p->forks);
-		pthread_mutex_lock(p->fork_right);
-		print_state(p, "has taken a fork");
-		if (is_dead(p))
-			return (true);
-		pthread_mutex_lock(&p->forks);
-		p->forks_are_free = false;
-		pthread_mutex_unlock(&p->forks);
 		pthread_mutex_lock(&p->fork_left);
 		print_state(p, "has taken a fork");
-		return (true);
+		if (p->state == FORK_RIGHT)
+			p->state = EAT;
+		else if (p->state == THINK)
+			p->state = FORK_LEFT;
+		if (is_dead(p))
+			return (false);
 	}
-	pthread_mutex_unlock(&p->forks);
-	return (false);
+	if (p->state == THINK || p->state == FORK_LEFT)
+	{
+		pthread_mutex_lock(p->fork_right);
+		print_state(p, "has taken a fork");
+		if (p->state == FORK_LEFT)
+			p->state = EAT;
+		else if (p->state == THINK)
+			p->state = FORK_RIGHT;
+		if (is_dead(p))
+			return (false);
+	}
+	return (true);
 }	
 
 // When a philosopher thinks, he does not interact with his colleagues.
@@ -97,10 +104,15 @@ void	*philosophers_routine(void *arg)
 	p->time_last_meal = p->t->time;
 	while (1)
 	{
-		if (is_taking_forks(p)
-			|| is_eating_sleeping(p, SLEEPING))
+		if (is_taking_forks(p) == false)
+			break;
+		if (is_eating(p) == false)
+			break;
+		if (is_sleeping(p) == false)
 			break;
 		print_state(p, "is thinking");
+		if (p->meal_to_eat == -1)
+			break;
 	}
 	return ((void*)0);
 }

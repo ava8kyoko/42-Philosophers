@@ -17,6 +17,23 @@ long int	get_time(t_philo *p, char ms)
 	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
+long int	is_dead(t_philo *p)
+{
+	pthread_mutex_lock(&p->t->main);
+	if (p->t->dead)
+		return (true);
+	pthread_mutex_unlock(&p->t->main);
+	return (false);
+}
+
+bool	print_state(t_philo *p, char *msg_state) // char fork
+{
+	pthread_mutex_lock(&p->t->print);
+	printf("%lu %d %s\n", get_time(p, MS), p->philo_id, msg_state);
+	pthread_mutex_unlock(&p->t->print);
+	return (false);
+}
+
 int	ft_atoi(const char *str)
 {
 	long	sign;
