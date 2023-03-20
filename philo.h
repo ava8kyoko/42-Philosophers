@@ -54,6 +54,8 @@ typedef struct s_table
 }				t_table;
 
 void			*philosophers_routine(void *arg);
+bool			print_state(t_philo *p, char *state)
+
 long int		get_time(t_philo *p, char ms);
 int				ft_atoi(const char *str);
 bool			is_valid_int(char *str);

@@ -2,70 +2,75 @@
 
 static void	detect_death(t_table *t)
 {
-	int	i;
+	int	id;
 
-	i = 0;
+	id = 0;
 	while (1)
 	{
-		pthread_mutex_lock(&t->p[i].health);
-		if (get_time(0, 0) - t->p[i].time_last_meal > t->time_die)
+		pthread_mutex_lock(&t->p[id].health);
+		if (get_time(0, 0) - t->p[id].time_last_meal > t->time_die)
 		{
-			pthread_mutex_unlock(&t->p[i].health);
-			pthread_mutex_lock(&t->p[i].print);
-			printf("%lu %d is dead\n", get_time(&t->p[i], MS), t->p[i].philo);
-			pthread_mutex_unlock(&t->p[i].print);
+			// pthread_mutex_unlock(&t->p[i].health);
+			print_state(t->p, "is dead");
 			t->dead = true;
 			return ;
 		}
 		pthread_mutex_unlock(&t->main);
-		i = (i + 1) % t->nbr_philo;
+		id = (id + 1) % t->nbr_philo;
 		// usleep(500);
-		// i++;
 	}
 }
 
 static void	philosophers_process(t_table *t)
 {
-	int	i;
+	int	id;
 
-	i = -1;
-	while (++i < t->nbr_philo)
+	id = -1;
+	while (++id < t->nbr_philo)
 	{
-		if (p->philo % 2 == 0)
+		if (t->p->philo % 2 == 0)
 		{
-			print_state(p, "is thinking");
+			pthread_mutex_lock(&t->p[id].print);
+			print_state(t->p, "is thinking");
+			pthread_mutex_lock(&t->p[id].print);
 			usleep(500);
 		}
-		pthread_create(&t->p[i].thread, NULL, &philosophers_routine, &t->p[i]);
-		pthread_detach(t->p[i].thread); // detach
+		pthread_create(&t->p[id].thread, NULL, &philosophers_routine, &t->p[id]);
+		pthread_detach(t->p[id].thread); // detach
 	}
 	detect_death(t);
 }
 
+// -> The threads could synchronize their accesses via a mutex, each one locking
+// that mutex before accessing a and unlocking it afterward.
+// As the mutex option demonstrates, avoiding a data race does not require ensuring
+// a specific order of operations, such as the child thread modifying a before
+// the main thread reads it; it is sufficient (for avoiding a data race) to ensure
+// that for a given execution, one access will happen before the other.
 static bool	init_philo(t_table *t)
 {
-	int	i;
+	int	id;
 
-	i = -1;
-	while (++i < t->nbr_philo)
+	id = -1;
+	while (++id < t->nbr_philo)
 	{
-		if (pthread_mutex_init(&t->p[i].fork_left, NULL)
-			|| pthread_mutex_init(&t->p[i].health, NULL)
-			|| pthread_mutex_init(&t->p[i].print, NULL)
-			|| pthread_mutex_init(&t->p[i].forks, NULL))
+		if (pthread_mutex_init(&t->p[id].fork_left, NULL)
+			|| pthread_mutex_init(&t->p[id].health, NULL)
+			|| pthread_mutex_init(&t->p[id].print, NULL)
+			|| pthread_mutex_init(&t->p[id].forks, NULL))
 			return (false);
-		t->p[i].fork_right = &t->p[(i + 1) % t->nbr_philo].fork_left;
-		t->p[i].forks_are_free = true;
-		t->p[i].philo = i + 1;
-		t->p[i].die = t->time_die;
-		t->p[i].eat = t->time_eat;
-		t->p[i].sleep = t->time_sleep;
-		t->p[i].meal_to_eat = t->nbr_meal;
-		t->p[i].meal_to_eat = t->nbr_meal;
-		t->p[i].time_last_meal = t->time;
-		t->p[i].t = t;
+		t->p[id].fork_right = &t->p[(id + 1) % t->nbr_philo].fork_left;
+		t->p[id].forks_are_free = true;
+		t->p[id].philo = id + 1;
+		t->p[id].die = t->time_die;
+		t->p[id].eat = t->time_eat;
+		t->p[id].sleep = t->time_sleep;
+		t->p[id].meal_to_eat = t->nbr_meal;
+		t->p[id].meal_to_eat = t->nbr_meal;
+		t->p[id].time_last_meal = t->time;
+		t->p[id].t = t;
 	}
-	t->p[i].fork_right = &t->p[0].fork_left;
+	t->p[id].fork_right = &t->p[0].fork_left;
 	return (true);
 }
 
