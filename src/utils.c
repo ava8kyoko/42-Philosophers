@@ -5,24 +5,28 @@
 long int	get_time(t_philo *p, char ms)
 {
 	struct timeval	time;
+	long int		previous_time;
 
 	if (ms == MS)
 	{
-		pthread_mutex_lock(&p->t->main);
-		return (get_time(0, MAIN_UNLOCK) - p->t->time);
+		pthread_mutex_lock(&p->t->m_time);
+		previous_time = p->t->time;
+		pthread_mutex_unlock(&p->t->m_time);
+		return (get_time(0, MAIN_UNLOCK) - previous_time);
 	}
-	if (ms == MAIN_UNLOCK)
-		pthread_mutex_unlock(&p->t->main);
 	gettimeofday(&time, NULL);
 	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
 long int	is_dead(t_philo *p)
 {
-	pthread_mutex_lock(&p->t->main);
-	if (p->t->dead)
+	bool	is_dead;
+
+	pthread_mutex_lock(&p->t->m_dead);
+	is_dead = p->t->dead;
+	pthread_mutex_unlock(&p->t->m_dead);
+	if (is_dead)
 		return (true);
-	pthread_mutex_unlock(&p->t->main);
 	return (false);
 }
 

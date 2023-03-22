@@ -45,7 +45,11 @@ typedef struct s_table
 	long int		time;
 	bool			dead;
 	t_philo			p[200];
-	pthread_mutex_t	main;
+	pthread_mutex_t	m_die;
+	pthread_mutex_t	m_dead;
+	pthread_mutex_t	m_meal;
+	pthread_mutex_t	m_last_meal;
+	pthread_mutex_t	m_time;
 	pthread_mutex_t	print;
 	pthread_mutex_t	health;
 }				t_table;
