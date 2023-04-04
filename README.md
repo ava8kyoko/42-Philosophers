@@ -43,6 +43,11 @@ As the mutex option demonstrates, avoiding a data race does not require ensuring
 - https://riptutorial.com/c/example/2622/data-race
 
 
+## Testers
+
+- [Socrates by nesvoboda](https://github.com/nesvoboda/socrates)
+- [Philophers visualizer](https://nafuka11.github.io/philosophers-visualizer/)
+
 References:
 - [Concurrency (computer science)](https://en.wikipedia.org/wiki/Concurrency_(computer_science))
 - [Dining Philosophers Problem](https://en.wikipedia.org/wiki/Dining_philosophers_problem)

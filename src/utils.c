@@ -18,17 +18,15 @@ long int	get_time(t_philo *p, char ms)
 	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
-long int	is_dead(t_philo *p)
-{
-	bool	is_dead;
+// long int	is_dead(t_philo *p)
+// {
+// 	bool	is_dead;
 
-	pthread_mutex_lock(&p->t->m_dead);
-	is_dead = p->t->dead;
-	pthread_mutex_unlock(&p->t->m_dead);
-	if (is_dead)
-		return (true);
-	return (false);
-}
+// 	// pthread_mutex_lock(&p->t->m_dead);
+// 	// is_dead = p->t->dead;
+// 	// pthread_mutex_unlock(&p->t->m_dead);
+// 	return (is_dead);
+// }
 
 bool	print_state(t_philo *p, char *msg_state) // char fork
 {

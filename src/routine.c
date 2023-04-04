@@ -25,7 +25,7 @@ static void	need_to_sleep(t_philo *p)
 	}
 }
 
-static bool is_sleeping(t_philo *p)
+static bool	is_sleeping(t_philo *p)
 {
 	bool	dead_state;
 
@@ -34,7 +34,8 @@ static bool is_sleeping(t_philo *p)
 		pthread_mutex_lock(&p->t->m_dead);
 		dead_state = p->t->dead;
 		pthread_mutex_unlock(&p->t->m_dead);
-		if (dead_state == true)
+		// if (dead_state == true)
+		if (get_time(p, 0)  <= (long int)p->time_to_die)
 			return (false);
 		print_state(p, "is sleeping");
 		need_to_sleep(p);
@@ -49,7 +50,8 @@ static bool	is_eating(t_philo *p)
 {
 	if (p->state == EAT)
 	{
-		if (is_dead(p))
+		// if (is_dead(p))
+		if (get_time(p, 0)  <= (long int)p->time_to_die)
 			return (false);
 		pthread_mutex_lock(&p->t->m_last_meal);
 		p->time_last_meal = get_time(0, 0);
@@ -57,8 +59,8 @@ static bool	is_eating(t_philo *p)
 		if (p->meal_to_eat != -1) 
 		{
 			p->meal_to_eat -= 1;
-			if (p->meal_to_eat == 0)
-				return (false);
+			// if (p->meal_to_eat == 0)
+			// 	return (false);
 		}
 		print_state(p, "is eating");
 		need_to_sleep(p);
@@ -74,7 +76,8 @@ static bool	is_eating(t_philo *p)
 // Cannot pick up a fork that is already in the hand of a neighbour.
 static bool	is_taking_forks(t_philo *p)
 {
-	if (is_dead(p))
+	// if (is_dead(p))
+	if (get_time(p, 0)  <= (long int)p->time_to_die)
 		return (true);
 	if (p->state == THINK || p->state == FORK_RIGHT)
 	{
@@ -84,7 +87,8 @@ static bool	is_taking_forks(t_philo *p)
 			p->state = EAT;
 		else if (p->state == THINK)
 			p->state = FORK_LEFT;
-		if (is_dead(p))
+		// if (is_dead(p))
+		if (get_time(p, 0)  <= (long int)p->time_to_die)
 			return (false);
 	}
 	if (p->state == THINK || p->state == FORK_LEFT)
@@ -95,7 +99,8 @@ static bool	is_taking_forks(t_philo *p)
 			p->state = EAT;
 		else if (p->state == THINK)
 			p->state = FORK_RIGHT;
-		if (is_dead(p))
+		// if (is_dead(p))
+		if (get_time(p, 0)  <= (long int)p->time_to_die)
 			return (false);
 	}
 	return (true);
@@ -123,8 +128,19 @@ void	*philosophers_routine(void *arg)
 		if (p->meal_to_eat == 0)
 		{
 			pthread_mutex_lock(&p->t->m_meal);
-			p->t->nbr_of_meal -= 1; // manque confition fin meal dans main
+			p->t->nbr_of_meal -= 1;
 			pthread_mutex_unlock(&p->t->m_meal);
+			p->meal_to_eat = -2;
+		}
+		if (p->meal_to_eat == -2)
+		{
+			printf("meal_to_eat -2 ---------------------------------------\n");
+			pthread_mutex_lock(&p->t->m_meal);
+			p->meal_to_eat = p->t->nbr_of_meal;
+			pthread_mutex_unlock(&p->t->m_meal);
+			if (p->meal_to_eat <= 0) // verifier si fonctionne avec == 0
+				break;
+			p->meal_to_eat = -2;
 		}
 	}
 	return ((void*)0);

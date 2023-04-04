@@ -18,9 +18,9 @@ static void	detect_death(t_table *t)
 		if (get_time(0, 0) - t_meal > t_die)
 		{
 			print_state(t->p, "is dead");
-			pthread_mutex_lock(&t->m_dead);
-			t->dead = true;
-			pthread_mutex_unlock(&t->m_dead);
+			// pthread_mutex_lock(&t->m_dead);
+			// t->dead = true;
+			// pthread_mutex_unlock(&t->m_dead);
 			return ;
 		}
 		id = (id + 1) % t->nbr_of_philo;
@@ -32,7 +32,6 @@ static void	philosophers_process(t_table *t)
 	int	id;
 
 	id = -1;
-
 	while (++id < t->nbr_of_philo)
 	{
 		if (t->p->philo_id % 2 == 0)
@@ -41,7 +40,7 @@ static void	philosophers_process(t_table *t)
 			usleep(15000);
 		}
 		pthread_create(&t->p[id].thread, NULL, &philosophers_routine, &t->p[id]);
-		pthread_detach(t->p[id].thread); // detach
+		pthread_detach(t->p[id].thread);
 	}
 	detect_death(t);
 }

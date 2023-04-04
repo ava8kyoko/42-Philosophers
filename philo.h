@@ -60,7 +60,7 @@ void		*philosophers_routine(void *arg);
 
 bool		print_state(t_philo *p, char *state);
 long int	get_time(t_philo *p, char ms);
-long int	is_dead(t_philo *p);
+// long int	is_dead(t_philo *p);
 int			ft_atoi(const char *str);
 bool		is_valid_int(char *str);
 
