@@ -60,3 +60,4 @@ References:
 - [timeoftheday()](https://linuxhint.com/gettimeofday_c_language/)
 - [Tester](https://github.com/newlinuxbot/Philosphers-42Project-Tester/blob/master/start.sh)
 - [Awesome README with kitty kat and litter. miaow](https://github.com/lavrenovamaria/42-philosophers)
+- [EXIT_SUCCESS, EXIT_FAILURE](https://en.cppreference.com/w/c/program/EXIT_status)

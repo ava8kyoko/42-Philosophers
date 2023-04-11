@@ -3,10 +3,13 @@
 
 # include <pthread.h>
 # include <stdbool.h>
+# include <stdlib.h>
 # include <stdio.h>
 # include <sys/time.h>
 # include <unistd.h>
 
+# define FAIL 0
+# define SUCCESS 1
 # define FORK_LEFT 'L'
 # define FORK_RIGHT 'R'
 # define EAT 'E'
@@ -32,6 +35,7 @@ typedef struct s_philo
 	pthread_t		thread;
 	pthread_mutex_t	fork_left;
 	pthread_mutex_t	*fork_right;
+	pthread_mutex_t	m_dead;
 }				t_philo;
 
 typedef struct s_table
@@ -43,7 +47,7 @@ typedef struct s_table
 	int				nbr_of_meal;
 	int				end;
 	long int		time;
-	bool			dead;
+	int				dead;
 	t_philo			p[200];
 	pthread_mutex_t	m_die;
 	pthread_mutex_t	m_dead;
@@ -59,8 +63,10 @@ int			main(int argc, char **argv);
 void		*philosophers_routine(void *arg);
 
 bool		print_state(t_philo *p, char *state);
+void		print_exit_error(char* msg);
+
 long int	get_time(t_philo *p, char ms);
-// long int	is_dead(t_philo *p);
+bool	is_dead(t_philo *p);
 int			ft_atoi(const char *str);
 bool		is_valid_int(char *str);
 

@@ -12,28 +12,21 @@ long int	get_time(t_philo *p, char ms)
 		pthread_mutex_lock(&p->t->m_time);
 		previous_time = p->t->time;
 		pthread_mutex_unlock(&p->t->m_time);
-		return (get_time(0, MAIN_UNLOCK) - previous_time);
+		return (get_time(0, 0) - previous_time);
 	}
 	gettimeofday(&time, NULL);
 	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
-// long int	is_dead(t_philo *p)
-// {
-// 	bool	is_dead;
-
-// 	// pthread_mutex_lock(&p->t->m_dead);
-// 	// is_dead = p->t->dead;
-// 	// pthread_mutex_unlock(&p->t->m_dead);
-// 	return (is_dead);
-// }
-
-bool	print_state(t_philo *p, char *msg_state) // char fork
-{
-	pthread_mutex_lock(&p->t->print);
-	printf("%lu %d %s\n", get_time(p, MS), p->philo_id, msg_state);
-	pthread_mutex_unlock(&p->t->print);
-	return (false);
+bool	is_dead(t_philo *p)
+{	
+	if (get_time(0, 0) - p->time_last_meal > p->time_to_die)
+		return (false);
+	pthread_mutex_lock(&p->t->m_dead);
+	if (p->t->dead == -1)
+		p->t->dead = p->philo_id;
+	pthread_mutex_unlock(&p->t->m_dead);
+	return (true);
 }
 
 int	ft_atoi(const char *str)

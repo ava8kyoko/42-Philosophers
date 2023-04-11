@@ -3,10 +3,10 @@
 #                                                         :::      ::::::::    #
 #    Makefile                                           :+:      :+:    :+:    #
 #                                                     +:+ +:+         +:+      #
-#    By: acid.burn <acid.burn@student.42.fr>        +#+  +:+       +#+         #
+#    By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/23 09:25:26 by mchampag          #+#    #+#              #
-#    Updated: 2023/03/22 00:53:13 by acid.burn        ###   ########.fr        #
+#    Updated: 2023/04/11 13:03:23 by mchampag         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ LDFLAGS = -phtread -lpthread
 
 # Files sources
 S = src/
-SRC_FILE = main.c routine.c utils.c
+SRC_FILE = main.c print.c routine.c utils.c
 SRC = $(addprefix $S, $(SRC_FILE))
 
 # Object conversion

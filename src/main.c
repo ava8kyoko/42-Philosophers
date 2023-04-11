@@ -2,28 +2,24 @@
 
 static void	detect_death(t_table *t)
 {
-	int	id;
-	long int	t_die;
-	long int	t_meal;
+	// long int	t_nbr_of_meal;
+	int		is_dead;
 
-	pthread_mutex_lock(&t->m_die);
-	t_die = t->time_to_die;
-	pthread_mutex_unlock(&t->m_die);
-	id = 0;
 	while (1)
 	{
-		pthread_mutex_lock(&t->m_last_meal);
-		t_meal = t->p[id].time_last_meal;
-		pthread_mutex_unlock(&t->m_last_meal);
-		if (get_time(0, 0) - t_meal > t_die)
+		pthread_mutex_lock(&t->m_dead);
+		is_dead = t->dead;
+		pthread_mutex_unlock(&t->m_dead);
+		if (is_dead >= 0)
 		{
 			print_state(t->p, "is dead");
-			// pthread_mutex_lock(&t->m_dead);
-			// t->dead = true;
-			// pthread_mutex_unlock(&t->m_dead);
-			return ;
+			exit(0);
 		}
-		id = (id + 1) % t->nbr_of_philo;
+		// pthread_mutex_lock(&t->m_meal);
+		// t_nbr_of_meal = t->nbr_of_meal;
+		// pthread_mutex_unlock(&t->m_meal);
+		// if (t_meal_to_eat == 0)
+		// 	return ;
 	}
 }
 
@@ -51,6 +47,9 @@ static void	philosophers_process(t_table *t)
 // a specific order of operations, such as the child thread modifying a before
 // the main thread reads it; it is sufficient (for avoiding a data race) to ensure
 // that for a given execution, one access will happen before the other.
+
+// p[id].fork_right = n + 1, so I use (id + 1) % t->nbr_of_philo to create a buckle,
+// i.e. it starts at id = 1 and ends with id = 0
 static bool	init_philo(t_table *t)
 {
 	int	id;
@@ -71,7 +70,6 @@ static bool	init_philo(t_table *t)
 		t->p[id].time_last_meal = t->time;
 		t->p[id].t = t;
 	}
-	t->p[id].fork_right = &t->p[0].fork_left;
 	return (true);
 }
 
@@ -97,7 +95,7 @@ static bool	init_table(t_table *t, int argc, char **argv)
 	else
 		t->nbr_of_meal = -1;
 	t->end = t->nbr_of_philo;
-	t->dead = false;
+	t->dead = -1;
 	t->time = get_time(0, 0);
 	return (true);
 }
@@ -107,16 +105,16 @@ int	main(int argc, char **argv)
 	t_table	t;
 	int		i;
 
-	if (argc == 5 || argc == 6)
+	if (argc < 5 || argc > 6)
+		print_exit_error("invalid argc\n");
+	i = 0;
+	while (argv[++i])
 	{
-		i = 0;
-		while (argv[++i])
-		{
-			if (!is_valid_int(argv[i]))
-				return (0); // error ??
-		}
-		if (init_table(&t, argc, argv) && init_philo(&t))
-			philosophers_process(&t);
+		if (is_valid_int(argv[i]) == FAIL)
+			print_exit_error("invalid argv\n");
 	}
-	return (0);
+	if (init_table(&t, argc, argv) == FAIL || init_philo(&t) == FAIL)
+		print_exit_error("initialisation failure\n");
+	philosophers_process(&t);
+	return (EXIT_SUCCESS);
 }
