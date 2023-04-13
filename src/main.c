@@ -2,24 +2,28 @@
 
 static void	detect_death(t_table *t)
 {
-	// long int	t_nbr_of_meal;
-	int		is_dead;
+	int			id;
+	long int	t_die;
+	long int	t_meal;
 
+	pthread_mutex_lock(&t->m_die);
+	t_die = t->time_to_die;
+	pthread_mutex_unlock(&t->m_die);
+	id = 0;
 	while (1)
 	{
-		pthread_mutex_lock(&t->m_dead);
-		is_dead = t->dead;
-		pthread_mutex_unlock(&t->m_dead);
-		if (is_dead >= 0)
+		pthread_mutex_lock(&t->m_last_meal);
+		t_meal = t->p[id].time_last_meal;
+		pthread_mutex_unlock(&t->m_last_meal);
+		if (get_time(0, 0) - t_meal > t_die)
 		{
 			print_state(t->p, "is dead");
-			exit(0);
+			pthread_mutex_lock(&t->m_dead);
+			t->dead = true;
+			pthread_mutex_unlock(&t->m_dead);
+			return ;
 		}
-		// pthread_mutex_lock(&t->m_meal);
-		// t_nbr_of_meal = t->nbr_of_meal;
-		// pthread_mutex_unlock(&t->m_meal);
-		// if (t_meal_to_eat == 0)
-		// 	return ;
+		id = (id + 1) % t->nbr_of_philo;
 	}
 }
 
@@ -29,15 +33,14 @@ static void	philosophers_process(t_table *t)
 
 	id = -1;
 	while (++id < t->nbr_of_philo)
-	{
-		if (t->p->philo_id % 2 == 0)
-		{
-			print_state(t->p, "is thinking");
-			usleep(15000);
-		}
+	{	
 		pthread_create(&t->p[id].thread, NULL, &philosophers_routine, &t->p[id]);
 		pthread_detach(t->p[id].thread);
 	}
+	pthread_mutex_lock(&t->m_meal);
+	if (t->nbr_of_meal == 0)
+		return ;
+	pthread_mutex_unlock(&t->m_meal);
 	detect_death(t);
 }
 
@@ -65,8 +68,7 @@ static bool	init_philo(t_table *t)
 		t->p[id].time_to_die = t->time_to_die;
 		t->p[id].time_to_eat = t->time_to_eat;
 		t->p[id].time_to_sleep = t->time_to_sleep;
-		t->p[id].meal_to_eat = t->nbr_of_meal;
-		t->p[id].meal_to_eat = t->nbr_of_meal;
+		t->p[id].meal_to_eat = t->nbr_of_meal / t->nbr_of_philo;
 		t->p[id].time_last_meal = t->time;
 		t->p[id].t = t;
 	}
@@ -75,8 +77,7 @@ static bool	init_philo(t_table *t)
 
 static bool	init_table(t_table *t, int argc, char **argv)
 {
-	if (pthread_mutex_init(&t->m_dead, NULL)
-		|| pthread_mutex_init(&t->m_die, NULL)
+	if (pthread_mutex_init(&t->m_die, NULL)
 		|| pthread_mutex_init(&t->m_meal, NULL)
 		|| pthread_mutex_init(&t->m_last_meal, NULL)
 		|| pthread_mutex_init(&t->m_time, NULL)
@@ -91,11 +92,10 @@ static bool	init_table(t_table *t, int argc, char **argv)
 		|| t->time_to_eat < 0 || t->time_to_sleep < 0)
 		return (0);
 	if (argc == 6)
-		t->nbr_of_meal = ft_atoi(argv[5]);
+		t->nbr_of_meal = ft_atoi(argv[5]) * t->nbr_of_philo;
 	else
-		t->nbr_of_meal = -1;
+		t->nbr_of_meal = t->nbr_of_philo;
 	t->end = t->nbr_of_philo;
-	t->dead = -1;
 	t->time = get_time(0, 0);
 	return (true);
 }

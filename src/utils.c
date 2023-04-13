@@ -19,15 +19,24 @@ long int	get_time(t_philo *p, char ms)
 }
 
 bool	is_dead(t_philo *p)
-{	
-	if (get_time(0, 0) - p->time_last_meal > p->time_to_die)
-		return (false);
+{
+	bool	is_dead;
+	
 	pthread_mutex_lock(&p->t->m_dead);
-	if (p->t->dead == -1)
-		p->t->dead = p->philo_id;
+	is_dead = p->t->dead;
 	pthread_mutex_unlock(&p->t->m_dead);
-	return (true);
+	if (is_dead)
+		return (true);
+	return (false);
 }
+// {	
+// 	if (get_time(0, 0) - p->time_last_meal > p->time_to_die)
+// 		return (false);
+// 	pthread_mutex_lock(&p->t->m_dead);
+// 	p->dead = true;
+// 	pthread_mutex_unlock(&p->t->m_dead);
+// 	return (true);
+// }
 
 int	ft_atoi(const char *str)
 {
