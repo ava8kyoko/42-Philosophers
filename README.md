@@ -1,5 +1,7 @@
 # 42-philosophers
 
+17 mai 9h30
+
 ## Index
 - [Data Race](## Data Race)
 

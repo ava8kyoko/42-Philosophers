@@ -13,7 +13,7 @@ static void	need_to_sleep(t_philo *p)
 	}
 	else if (p->state == SLEEP)
 	{
-		time_to_stop = p->time_to_sleep;
+		time_to_stop = p->time_last_meal + p->time_to_eat + p->time_to_sleep;
 		p->state = THINK;
 	}
 	while (1)
@@ -27,10 +27,12 @@ static void	need_to_sleep(t_philo *p)
 
 static bool	is_sleeping(t_philo *p)
 {
-	print_state(p, "is sleeping");
-	need_to_sleep(p);
 	if (is_dead(p))
 		return (false);
+	print_state(p, "is sleeping");
+	need_to_sleep(p);
+	// if (is_dead(p))
+	// 	return (false);
 	return (true);
 }
 
@@ -39,17 +41,15 @@ static bool	is_sleeping(t_philo *p)
 // both of his forks and starts thinking again.
 static bool	is_eating(t_philo *p)
 {
+	// if (is_dead(p))
+	// 	return (false);
+	if (p->meal_to_eat != -1) 
+		p->meal_to_eat -= 1;
+	pthread_mutex_lock(&p->m_last_meal);
+	p->time_last_meal = get_time(0, 0);
+	pthread_mutex_unlock(&p->m_last_meal);
 	if (is_dead(p))
 		return (false);
-	pthread_mutex_lock(&p->t->m_last_meal);
-	p->time_last_meal = get_time(0, 0);
-	pthread_mutex_unlock(&p->t->m_last_meal);
-	if (p->meal_to_eat != -1) 
-	{
-		p->meal_to_eat -= 1;
-		// if (p->meal_to_eat == 0)
-		// 	return (false);
-	}
 	print_state(p, "is eating");
 	need_to_sleep(p);
 	pthread_mutex_unlock(&p->fork_left);
@@ -65,11 +65,11 @@ static bool	is_taking_forks(t_philo *p)
 {
 	while (p->state != EAT)
 	{
-		if (is_dead(p))
-			return (false);
-		if (p->state == THINK)
+		if (p->state == THINK || p->state == FORK_RIGHT)
 		{
-			pthread_mutex_lock(&p->fork_left);
+			pthread_mutex_lock(&p->fork_right[p->philo_id]);
+			if (is_dead(p))
+				return (false);
 			print_state(p, "has taken a fork_left");
 			if (p->state == FORK_RIGHT)
 				p->state = EAT;
@@ -78,7 +78,9 @@ static bool	is_taking_forks(t_philo *p)
 		}
 		if (p->state == FORK_LEFT)
 		{
-			pthread_mutex_lock(p->fork_right);
+			pthread_mutex_lock(&p->fork_right[p->philo_id]);
+			if (is_dead(p))
+				return (false);
 			print_state(p, "has taken a fork_right");
 			if (p->state == FORK_LEFT)
 				p->state = EAT;
@@ -108,18 +110,24 @@ void	*philosophers_routine(void *arg)
 			break;
 		if (p->state == EAT && is_eating(p) == false)
 			break;
-		if (p->meal_to_eat == 0)
+		if (p->state == SLEEP && is_sleeping(p) == false)
+			break;		
+		// if (p->state == SLEEP)
+		// 	is_sleeping(p);
+		if (p->state == THINK)
+			print_state(p, "is thinking");
+		if (p->state == THINK && p->meal_to_eat == 0)
 		{
 			pthread_mutex_lock(&p->t->m_meal);
-			printf("p->t->nbr_of_meal : %d\n", p->t->nbr_of_meal);
+			// printf("p->t->nbr_of_meal : %d\n", p->t->nbr_of_meal);
 			if (p->t->nbr_of_meal != 1)
 				p->t->nbr_of_meal -= 1;
 			else
-				exit(0);
+				break;
 			pthread_mutex_unlock(&p->t->m_meal);
 			p->meal_to_eat = -2;
 		}
-		if (p->meal_to_eat == -2)
+		if (p->state == THINK && p->meal_to_eat == -2)
 		{
 			pthread_mutex_lock(&p->t->m_meal);
 			p->meal_to_eat = p->t->nbr_of_meal;
@@ -128,12 +136,6 @@ void	*philosophers_routine(void *arg)
 				break; // return (false);
 			p->meal_to_eat = -2;
 		}
-		if (p->state == SLEEP && is_sleeping(p) == false)
-			break;
-		if (p->state == SLEEP)
-			is_sleeping(p);
-		if (p->state == THINK)
-			print_state(p, "is thinking");
 	}
 	return ((void*)0);
 }
