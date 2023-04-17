@@ -9,37 +9,15 @@ static void	detect_death(t_table *t)
 	i = 0;
 	while (1)
 	{
-		pthread_mutex_lock(&t->p[i].m_last_meal);
+		pthread_mutex_lock(&t->m_time_last_meal);
 		time_without_eating = get_time(0, 0) - t->p[i].time_last_meal;
-		pthread_mutex_unlock(&t->p[i].m_last_meal);
+		pthread_mutex_unlock(&t->m_time_last_meal);
 		if (time_without_eating > t->p[i].time_to_die)
 		{
 			pthread_mutex_lock(&t->m_dead);
 			t->dead = true;
 			pthread_mutex_unlock(&t->m_dead);
 			print_state(&t->p[i], "is dead");
-			i = 0;
-			while (i != t->p[i].philo_id)
-			{
-				pthread_mutex_lock(&t->p[i].fork_left);
-				pthread_mutex_unlock(&t->p[i].fork_left);
-				pthread_mutex_destroy(&t->p[i].fork_left);
-				pthread_mutex_lock(&t->p[i].m_last_meal);
-				pthread_mutex_unlock(&t->p[i].m_last_meal);
-				pthread_mutex_destroy(&t->p[i].m_last_meal);
-			}
-			pthread_mutex_lock(&t->m_die);
-			pthread_mutex_unlock(&t->m_die);
-			pthread_mutex_destroy(&t->m_die);
-			pthread_mutex_lock(&t->m_meal);
-			pthread_mutex_unlock(&t->m_meal);
-			pthread_mutex_destroy(&t->m_meal);
-			pthread_mutex_lock(&t->m_time);
-			pthread_mutex_unlock(&t->m_time);
-			pthread_mutex_destroy(&t->m_time);
-			pthread_mutex_lock(&t->print);
-			pthread_mutex_unlock(&t->print);
-			pthread_mutex_destroy(&t->print);
 			return ;
 		}
 		i = (i + 1) % t->nbr_of_philo;
@@ -79,12 +57,13 @@ static bool	init_philo(t_table *t)
 	i = -1;
 	while (++i < t->nbr_of_philo)
 	{
-		if (pthread_mutex_init(&t->p[i].fork_right, NULL)
-			|| pthread_mutex_init(&t->p[i]m_last_meal, NULL))
-			return (false);
-		t->p[i].fork_right = &t->p[(id + 1) % t->nbr_of_philo].fork_left;
+		if (pthread_mutex_init(&t->p[i].fork, NULL)
+			|| pthread_mutex_init(&t->p[i].m_time_last_meal, NULL))
+		return (false);
+	scanf(" ");
+		// t->p[i].fork_left = &t->p[(i + 1) % t->nbr_of_philo].fork_right;
 		t->p[i].state = THINK;
-		t->p[i].philo_id = id + 1;
+		t->p[i].philo_id = i + 1;
 		t->p[i].time_to_die = t->time_to_die;
 		t->p[i].time_to_eat = t->time_to_eat;
 		t->p[i].time_to_sleep = t->time_to_sleep;
@@ -92,6 +71,7 @@ static bool	init_philo(t_table *t)
 		t->p[i].time_last_meal = t->time;
 		t->p[i].t = t;
 	}
+	scanf(" ");
 	return (true);
 }
 
@@ -124,15 +104,23 @@ int	main(int argc, char **argv)
 	int		i;
 
 	if (argc < 5 || argc > 6)
-		print_exit_error("invalid argc\n");
+	{
+		ft_putstr_fd("invalid argc\n", 2);
+		return (EXIT_FAILURE);
+	}
 	i = 0;
 	while (argv[++i])
 	{
 		if (is_valid_int(argv[i]) == FAIL)
-			print_exit_error("invalid argv\n");
+		{
+			ft_putstr_fd("invalid argv\n", 2);
+			return (EXIT_FAILURE);
+		}
 	}
 	if (init_table(&t, argc, argv) == FAIL || init_philo(&t) == FAIL)
-		print_exit_error("initialisation failure\n");
+		ft_putstr_fd("initialisation failure\n", 2);
+			return (EXIT_FAILURE);
 	philosophers_process(&t);
+	destroy_mutex(&t, 't');
 	return (EXIT_SUCCESS);
 }

@@ -18,6 +18,31 @@ long int	get_time(t_philo *p, char ms)
 	return ((time.tv_sec * 1000) + (time.tv_usec / 1000));
 }
 
+bool	check_meal(t_philo *p)
+{
+	if (p->meal_to_eat == 0)
+	{
+		pthread_mutex_lock(&p->t->m_meal);
+		// printf("p->t->nbr_of_meal : %d\n", p->t->nbr_of_meal);
+		if (p->t->nbr_of_meal != 1)
+			p->t->nbr_of_meal -= 1;
+		else
+			return (false);
+		pthread_mutex_unlock(&p->t->m_meal);
+		p->meal_to_eat = -2;
+	}
+	if (p->meal_to_eat == -2)
+	{
+		pthread_mutex_lock(&p->t->m_meal);
+		p->meal_to_eat = p->t->nbr_of_meal;
+		pthread_mutex_unlock(&p->t->m_meal);
+		if (p->meal_to_eat <= 0) // verifier si fonctionne avec == 0
+			return (false);
+		p->meal_to_eat = -2;
+	}
+	return (true);
+}
+
 bool	is_dead(t_philo *p)
 {
 	bool	is_dead;
@@ -38,56 +63,35 @@ bool	is_dead(t_philo *p)
 // 	return (true);
 // }
 
-int	ft_atoi(const char *str)
+void	destroy_mutex(t_table *t, char flag)
 {
-	long	sign;
-	long	converted;
-
-	sign = 1;
-	converted = 0;
-	while ((*str >= 9 && *str <= 13) || *str == ' ')
-		str++;
-	if (*str == '-')
+	int	i;
+	if (flag == 't')
 	{
-		if (*str++ == '-')
-			sign = -1;
+		pthread_mutex_lock(&t->m_die);
+		pthread_mutex_unlock(&t->m_die);
+		pthread_mutex_destroy(&t->m_die);
+		pthread_mutex_lock(&t->m_meal);
+		pthread_mutex_unlock(&t->m_meal);
+		pthread_mutex_destroy(&t->m_meal);
+		pthread_mutex_lock(&t->m_time);
+		pthread_mutex_unlock(&t->m_time);
+		pthread_mutex_destroy(&t->m_time);
+		pthread_mutex_lock(&t->print);
+		pthread_mutex_unlock(&t->print);
+		pthread_mutex_destroy(&t->print);
 	}
-	while (*str >= '0' && *str <= '9')
+	else if (flag == 'p')
 	{
-		if ((converted * 10) + (*str - '0') < converted && sign == 1)
-			return (-1);
-		else if ((converted * 10) + (*str - '0') < converted && sign == -1)
-			return (0);
-		converted *= 10;
-		converted += *str++ - '0';
+		i = -1;
+		while (++i < t->nbr_of_philo)
+		{
+			pthread_mutex_lock(&t->fork[i]);
+			pthread_mutex_unlock(&t->fork[i]);
+			pthread_mutex_destroy(&t->fork[i]);
+			pthread_mutex_lock(&t->m_time_last_meal[i]);
+			pthread_mutex_unlock(&t->m_time_last_meal[i]);
+			pthread_mutex_destroy(&t->m_time_last_meal[i]);
+		}
 	}
-	return (sign * converted);
-}
-
-bool	is_valid_int(char *str)
-{
-	int			sign;
-	long long	value;
-
-	sign = 1;
-	value = 0;
-	// printf("%s\n", str);
-	if (*str == '-')
-	{
-		sign = -1;
-		str++;
-		if (!*str)
-			return (false);
-	}
-	while (*str && *str >= '0' && *str <= '9')
-	{
-		value *= 10;
-		value += *str - '0';
-		if ((value * sign) > 2147483647 || (value * sign) < -2147483648)
-			return (false);
-		str++;
-	}
-	if (*str && (*str < '0' || *str > '9'))
-		return (false);
-	return (true);
 }

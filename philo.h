@@ -33,9 +33,9 @@ typedef struct s_philo
 	long int		time_last_meal;
 	t_table			*t;
 	pthread_t		thread;
-	// pthread_mutex_t	fork_left;
-	pthread_mutex_t	*fork_right;
-	pthread_mutex_t	m_last_meal;
+	// pthread_mutex_t	*fork_right;
+	pthread_mutex_t	fork;
+	pthread_mutex_t	*m_time_last_meal;
 }				t_philo;
 
 typedef struct s_table
@@ -54,7 +54,6 @@ typedef struct s_table
 	pthread_mutex_t	m_meal;
 	pthread_mutex_t	m_time;
 	pthread_mutex_t	print;
-	pthread_mutex_t	health;
 }				t_table;
 
 int			main(int argc, char **argv);
@@ -62,10 +61,13 @@ int			main(int argc, char **argv);
 void		*philosophers_routine(void *arg);
 
 bool		print_state(t_philo *p, char *state);
-void		print_exit_error(char* msg);
+void		ft_putstr_fd(char *str, int fd);
 
 long int	get_time(t_philo *p, char ms);
+bool		check_meal(t_philo *p);
 bool		is_dead(t_philo *p);
+void		destroy_mutex(t_table *t, char flag);
+
 int			ft_atoi(const char *str);
 bool		is_valid_int(char *str);
 

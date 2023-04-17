@@ -6,7 +6,7 @@
 #    By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/23 09:25:26 by mchampag          #+#    #+#              #
-#    Updated: 2023/04/11 13:03:23 by mchampag         ###   ########.fr        #
+#    Updated: 2023/04/17 12:52:56 by mchampag         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -23,7 +23,7 @@ LDFLAGS = -phtread -lpthread
 
 # Files sources
 S = src/
-SRC_FILE = main.c print.c routine.c utils.c
+SRC_FILE = main.c parsing.c print.c routine.c utils.c
 SRC = $(addprefix $S, $(SRC_FILE))
 
 # Object conversion
