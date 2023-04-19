@@ -33,42 +33,41 @@ typedef struct s_philo
 	long int		time_last_meal;
 	t_table			*t;
 	pthread_t		thread;
-	// pthread_mutex_t	*fork_right;
-	pthread_mutex_t	fork;
-	pthread_mutex_t	*m_time_last_meal;
+	pthread_mutex_t	fork_left;
+	pthread_mutex_t	*fork_right;
+	pthread_mutex_t	last_meal;
 }				t_philo;
 
 typedef struct s_table
 {
-	bool			dead;
+	bool			is_dead;
 	int				nbr_of_philo;
 	int				time_to_die;
 	int				time_to_eat;
 	int				time_to_sleep;
 	int				nbr_of_meal;
 	int				end;
-	long int		time;
+	long int		actual_time;
 	t_philo			p[200];
-	pthread_mutex_t	m_dead;
-	pthread_mutex_t	m_die;
-	pthread_mutex_t	m_meal;
-	pthread_mutex_t	m_time;
+	pthread_mutex_t	dead;
+	pthread_mutex_t	meal;
 	pthread_mutex_t	print;
+	pthread_mutex_t	time;
 }				t_table;
 
-int			main(int argc, char **argv);
-
-void		*philosophers_routine(void *arg);
-
-bool		print_state(t_philo *p, char *state);
 void		ft_putstr_fd(char *str, int fd);
+bool		print_state(t_philo *p, char *state);
 
 long int	get_time(t_philo *p, char ms);
 bool		check_meal(t_philo *p);
 bool		is_dead(t_philo *p);
-void		destroy_mutex(t_table *t, char flag);
+void		destroy_mutex(t_table *t);
 
-int			ft_atoi(const char *str);
+void		*philosophers_routine(void *arg);
+
 bool		is_valid_int(char *str);
+int			ft_atoi(const char *str);
+
+int			main(int argc, char **argv);
 
 #endif

@@ -45,15 +45,15 @@ static bool	is_eating(t_philo *p)
 	// 	return (false);
 	if (p->meal_to_eat != -1) 
 		p->meal_to_eat -= 1;
-	pthread_mutex_lock(p->t->m_time_last_meal);
+	pthread_mutex_lock(&p->last_meal);
 	p->time_last_meal = get_time(0, 0);
-	pthread_mutex_unlock(p->t->m_time_last_meal);
+	pthread_mutex_unlock(&p->last_meal);
 	if (is_dead(p))
 		return (false);
 	print_state(p, "is eating");
 	need_to_sleep(p);
-	pthread_mutex_unlock(&p->t->fork[p->philo_id - 1]);
-	pthread_mutex_unlock(&p->t->fork[p->philo_id]);
+	pthread_mutex_unlock(&p->fork_left);
+	pthread_mutex_unlock(p->fork_right);
 	return (true);
 }
 
@@ -67,7 +67,7 @@ static bool	is_taking_forks(t_philo *p)
 	{
 		if (p->state == THINK || p->state == FORK_RIGHT)
 		{
-			pthread_mutex_lock(&p->t->fork[p->philo_id - 1]);
+			pthread_mutex_lock(&p->fork_left);
 			if (is_dead(p))
 				return (false);
 			print_state(p, "has taken a fork_left");
@@ -78,7 +78,7 @@ static bool	is_taking_forks(t_philo *p)
 		}
 		if (p->state == FORK_LEFT)
 		{
-			pthread_mutex_lock(&p->t->fork[p->philo_id]);
+			pthread_mutex_lock(p->fork_right);
 			if (is_dead(p))
 				return (false);
 			print_state(p, "has taken a fork_right");
@@ -97,9 +97,11 @@ void	*philosophers_routine(void *arg)
 	t_philo	*p;
 	
 	p = arg;
-	pthread_mutex_lock(&p->t->m_time);
-	p->time_last_meal = p->t->time;
-	pthread_mutex_unlock(&p->t->m_time);
+	pthread_mutex_lock(&p->t->time);
+	pthread_mutex_lock(&p->last_meal);
+	p->time_last_meal = p->t->actual_time;
+	pthread_mutex_unlock(&p->last_meal);
+	pthread_mutex_unlock(&p->t->time);
 	print_state(p, "is thinking");
 	if (p->philo_id % 2 == 0)
 		usleep(15000);
@@ -111,13 +113,12 @@ void	*philosophers_routine(void *arg)
 			break;
 		if (p->state == SLEEP && is_sleeping(p) == false)
 			break;		
-		// if (p->state == SLEEP)
-		// 	is_sleeping(p);
+		if (is_dead(p))
+			break;
 		if (p->state == THINK)
 			print_state(p, "is thinking");
 		if (p->state == THINK	&& check_meal(p) == false)
 			break;
 	}
-	destroy_mutex(p->t, 'p');
 	return ((void*)0);
 }

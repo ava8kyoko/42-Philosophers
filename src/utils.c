@@ -9,9 +9,9 @@ long int	get_time(t_philo *p, char ms)
 
 	if (ms == MS)
 	{
-		pthread_mutex_lock(&p->t->m_time);
-		previous_time = p->t->time;
-		pthread_mutex_unlock(&p->t->m_time);
+		pthread_mutex_lock(&p->t->time);
+		previous_time = p->t->actual_time;
+		pthread_mutex_unlock(&p->t->time);
 		return (get_time(0, 0) - previous_time);
 	}
 	gettimeofday(&time, NULL);
@@ -22,20 +22,20 @@ bool	check_meal(t_philo *p)
 {
 	if (p->meal_to_eat == 0)
 	{
-		pthread_mutex_lock(&p->t->m_meal);
+		pthread_mutex_lock(&p->t->meal);
 		// printf("p->t->nbr_of_meal : %d\n", p->t->nbr_of_meal);
 		if (p->t->nbr_of_meal != 1)
 			p->t->nbr_of_meal -= 1;
 		else
 			return (false);
-		pthread_mutex_unlock(&p->t->m_meal);
+		pthread_mutex_unlock(&p->t->meal);
 		p->meal_to_eat = -2;
 	}
 	if (p->meal_to_eat == -2)
 	{
-		pthread_mutex_lock(&p->t->m_meal);
+		pthread_mutex_lock(&p->t->meal);
 		p->meal_to_eat = p->t->nbr_of_meal;
-		pthread_mutex_unlock(&p->t->m_meal);
+		pthread_mutex_unlock(&p->t->meal);
 		if (p->meal_to_eat <= 0) // verifier si fonctionne avec == 0
 			return (false);
 		p->meal_to_eat = -2;
@@ -47,51 +47,38 @@ bool	is_dead(t_philo *p)
 {
 	bool	is_dead;
 	
-	pthread_mutex_lock(&p->t->m_dead);
-	is_dead = p->t->dead;
-	pthread_mutex_unlock(&p->t->m_dead);
+	pthread_mutex_lock(&p->t->dead);
+	is_dead = p->t->is_dead;
+	pthread_mutex_unlock(&p->t->dead);
 	if (is_dead)
 		return (true);
 	return (false);
 }
-// {	
-// 	if (get_time(0, 0) - p->time_last_meal > p->time_to_die)
-// 		return (false);
-// 	pthread_mutex_lock(&p->t->m_dead);
-// 	p->dead = true;
-// 	pthread_mutex_unlock(&p->t->m_dead);
-// 	return (true);
-// }
 
-void	destroy_mutex(t_table *t, char flag)
+void	destroy_mutex(t_table *t)
 {
 	int	i;
-	if (flag == 't')
+
+	// pthread_mutex_lock(&t->dead);
+	pthread_mutex_unlock(&t->dead);
+	pthread_mutex_destroy(&t->dead);
+	// pthread_mutex_lock(&t->meal);
+	pthread_mutex_unlock(&t->meal);
+	pthread_mutex_destroy(&t->meal);
+	// pthread_mutex_lock(&t->print);
+	pthread_mutex_unlock(&t->print);
+	pthread_mutex_destroy(&t->print);
+	// pthread_mutex_lock(&t->time);
+	pthread_mutex_unlock(&t->time);
+	pthread_mutex_destroy(&t->time);
+	i = -1;
+	while (++i < t->nbr_of_philo)
 	{
-		pthread_mutex_lock(&t->m_die);
-		pthread_mutex_unlock(&t->m_die);
-		pthread_mutex_destroy(&t->m_die);
-		pthread_mutex_lock(&t->m_meal);
-		pthread_mutex_unlock(&t->m_meal);
-		pthread_mutex_destroy(&t->m_meal);
-		pthread_mutex_lock(&t->m_time);
-		pthread_mutex_unlock(&t->m_time);
-		pthread_mutex_destroy(&t->m_time);
-		pthread_mutex_lock(&t->print);
-		pthread_mutex_unlock(&t->print);
-		pthread_mutex_destroy(&t->print);
-	}
-	else if (flag == 'p')
-	{
-		i = -1;
-		while (++i < t->nbr_of_philo)
-		{
-			pthread_mutex_lock(&t->fork[i]);
-			pthread_mutex_unlock(&t->fork[i]);
-			pthread_mutex_destroy(&t->fork[i]);
-			pthread_mutex_lock(&t->m_time_last_meal[i]);
-			pthread_mutex_unlock(&t->m_time_last_meal[i]);
-			pthread_mutex_destroy(&t->m_time_last_meal[i]);
-		}
+		// pthread_mutex_lock(&t->p[i].fork_left);
+		pthread_mutex_unlock(&t->p[i].fork_left);
+		pthread_mutex_destroy(&t->p[i].fork_left);
+		// pthread_mutex_lock(&t->p[i].last_meal);
+		pthread_mutex_unlock(&t->p[i].last_meal);
+		pthread_mutex_destroy(&t->p[i].last_meal);
 	}
 }

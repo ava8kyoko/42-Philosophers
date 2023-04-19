@@ -3,20 +3,19 @@
 static void	detect_death(t_table *t)
 {
 	int			i;
-	// long int	t_die;
 	long int	time_without_eating;
 
 	i = 0;
 	while (1)
 	{
-		pthread_mutex_lock(&t->m_time_last_meal);
+		pthread_mutex_lock(&t->p[i].last_meal);
 		time_without_eating = get_time(0, 0) - t->p[i].time_last_meal;
-		pthread_mutex_unlock(&t->m_time_last_meal);
+		pthread_mutex_unlock(&t->p[i].last_meal);
 		if (time_without_eating > t->p[i].time_to_die)
 		{
-			pthread_mutex_lock(&t->m_dead);
-			t->dead = true;
-			pthread_mutex_unlock(&t->m_dead);
+			pthread_mutex_lock(&t->dead);
+			t->is_dead = true;
+			pthread_mutex_unlock(&t->dead);
 			print_state(&t->p[i], "is dead");
 			return ;
 		}
@@ -33,11 +32,12 @@ static void	philosophers_process(t_table *t)
 	{	
 		pthread_create(&t->p[id].thread, NULL, &philosophers_routine, &t->p[id]);
 		pthread_detach(t->p[id].thread);
+
 	}
-	pthread_mutex_lock(&t->m_meal);
+	pthread_mutex_lock(&t->meal);
 	if (t->nbr_of_meal == 0)
 		return ;
-	pthread_mutex_unlock(&t->m_meal);
+	pthread_mutex_unlock(&t->meal);
 	detect_death(t);
 }
 
@@ -57,29 +57,27 @@ static bool	init_philo(t_table *t)
 	i = -1;
 	while (++i < t->nbr_of_philo)
 	{
-		if (pthread_mutex_init(&t->p[i].fork, NULL)
-			|| pthread_mutex_init(&t->p[i].m_time_last_meal, NULL))
-		return (false);
-	scanf(" ");
-		// t->p[i].fork_left = &t->p[(i + 1) % t->nbr_of_philo].fork_right;
+		if (pthread_mutex_init(&t->p[i].fork_left, NULL)
+			|| pthread_mutex_init(&t->p[i].last_meal, NULL))
+			return (false);
+		t->p[i].fork_right = &t->p[(i + 1) % t->nbr_of_philo].fork_left;
 		t->p[i].state = THINK;
 		t->p[i].philo_id = i + 1;
 		t->p[i].time_to_die = t->time_to_die;
 		t->p[i].time_to_eat = t->time_to_eat;
 		t->p[i].time_to_sleep = t->time_to_sleep;
 		t->p[i].meal_to_eat = t->nbr_of_meal / t->nbr_of_philo;
-		t->p[i].time_last_meal = t->time;
+		t->p[i].time_last_meal = t->actual_time;
 		t->p[i].t = t;
 	}
-	scanf(" ");
 	return (true);
 }
 
 static bool	init_table(t_table *t, int argc, char **argv)
 {
-	if (pthread_mutex_init(&t->m_die, NULL)
-		|| pthread_mutex_init(&t->m_meal, NULL)
-		|| pthread_mutex_init(&t->m_time, NULL)
+	if (pthread_mutex_init(&t->dead, NULL)
+		|| pthread_mutex_init(&t->meal, NULL)
+		|| pthread_mutex_init(&t->time, NULL)
 		|| pthread_mutex_init(&t->print, NULL))
 		return (false);
 	t->nbr_of_philo = ft_atoi(argv[1]);
@@ -93,8 +91,9 @@ static bool	init_table(t_table *t, int argc, char **argv)
 		t->nbr_of_meal = ft_atoi(argv[5]) * t->nbr_of_philo;
 	else
 		t->nbr_of_meal = t->nbr_of_philo;
+	t->is_dead = false;
 	t->end = t->nbr_of_philo;
-	t->time = get_time(0, 0);
+	t->actual_time = get_time(0, 0);
 	return (true);
 }
 
@@ -118,9 +117,11 @@ int	main(int argc, char **argv)
 		}
 	}
 	if (init_table(&t, argc, argv) == FAIL || init_philo(&t) == FAIL)
+	{
 		ft_putstr_fd("initialisation failure\n", 2);
-			return (EXIT_FAILURE);
+		return (EXIT_FAILURE);
+	}
 	philosophers_process(&t);
-	destroy_mutex(&t, 't');
+	// destroy_mutex(&t);
 	return (EXIT_SUCCESS);
 }
