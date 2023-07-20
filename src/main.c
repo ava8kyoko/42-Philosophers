@@ -32,7 +32,6 @@ static void	philosophers_process(t_table *t)
 	{	
 		pthread_create(&t->p[id].thread, NULL, &philosophers_routine, &t->p[id]);
 		pthread_detach(t->p[id].thread);
-
 	}
 	pthread_mutex_lock(&t->meal);
 	if (t->nbr_of_meal == 0)
@@ -66,7 +65,10 @@ static bool	init_philo(t_table *t)
 		t->p[i].time_to_die = t->time_to_die;
 		t->p[i].time_to_eat = t->time_to_eat;
 		t->p[i].time_to_sleep = t->time_to_sleep;
-		t->p[i].meal_to_eat = t->nbr_of_meal / t->nbr_of_philo;
+		if (t->nbr_of_meal == -1)
+			t->p[i].meal_to_eat = -1;
+		else
+			t->p[i].meal_to_eat = t->nbr_of_meal / t->nbr_of_philo;
 		t->p[i].time_last_meal = t->actual_time;
 		t->p[i].t = t;
 	}
@@ -90,13 +92,30 @@ static bool	init_table(t_table *t, int argc, char **argv)
 	if (argc == 6)
 		t->nbr_of_meal = ft_atoi(argv[5]) * t->nbr_of_philo;
 	else
-		t->nbr_of_meal = t->nbr_of_philo;
+		t->nbr_of_meal = -1;
+		// t->nbr_of_meal = t->nbr_of_philo;
 	t->is_dead = false;
 	t->end = t->nbr_of_philo;
 	t->actual_time = get_time(0, 0);
 	return (true);
 }
 
+
+// number_of_philosophers time_to_die time_to_eat time_to_sleep
+//[number_of_times_each_philosopher_must_eat]
+
+//◦number_of_philosophers: The number of philosophers and also the number
+//of forks.
+//◦time_to_die (in milliseconds): If a philosopher didn’t start eating time_to_die
+//milliseconds since the beginning of their last meal or the beginning of the sim-
+//ulation, they die.
+//◦time_to_eat (in milliseconds): The time it takes for a philosopher to eat.
+//During that time, they will need to hold two forks.
+//◦time_to_sleep (in milliseconds): The time a philosopher will spend sleeping.
+//◦number_of_times_each_philosopher_must_eat (optional argument): If all
+//philosophers have eaten at least number_of_times_each_philosopher_must_eat
+//times, the simulation stops. If not specified, the simulation stops when a
+//philosopher dies.
 int	main(int argc, char **argv)
 {
 	t_table	t;

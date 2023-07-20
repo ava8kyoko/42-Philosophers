@@ -21,7 +21,7 @@ static void	need_to_sleep(t_philo *p)
 		delay = time_to_stop - get_time(0, 0);
 		if (delay <= 0)
 			break;
-		usleep(500); //10000
+		usleep(500); //10000 //300 //400 // 500
 	}
 }
 
@@ -37,7 +37,7 @@ static bool	is_sleeping(t_philo *p)
 }
 
 // When a hungry philosopher has both his forks at the same time, he eats
-// without relasing his forks. When he has finised eating, he puts down
+// without relasing his forks. When he has finished eating, he puts down
 // both of his forks and starts thinking again.
 static bool	is_eating(t_philo *p)
 {
@@ -102,9 +102,11 @@ void	*philosophers_routine(void *arg)
 	p->time_last_meal = p->t->actual_time;
 	pthread_mutex_unlock(&p->last_meal);
 	pthread_mutex_unlock(&p->t->time);
-	print_state(p, "is thinking");
 	if (p->philo_id % 2 == 0)
+	{
+		print_state(p, "is thinking");
 		usleep(15000);
+	}
 	while (1)
 	{
 		if (p->state == THINK && is_taking_forks(p) == false)

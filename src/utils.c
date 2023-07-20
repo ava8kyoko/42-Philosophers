@@ -20,26 +20,28 @@ long int	get_time(t_philo *p, char ms)
 
 bool	check_meal(t_philo *p)
 {
-	if (p->meal_to_eat == 0)
-	{
-		pthread_mutex_lock(&p->t->meal);
-		// printf("p->t->nbr_of_meal : %d\n", p->t->nbr_of_meal);
-		if (p->t->nbr_of_meal != 1)
-			p->t->nbr_of_meal -= 1;
-		else
-			return (false);
-		pthread_mutex_unlock(&p->t->meal);
-		p->meal_to_eat = -2;
-	}
-	if (p->meal_to_eat == -2)
-	{
-		pthread_mutex_lock(&p->t->meal);
-		p->meal_to_eat = p->t->nbr_of_meal;
-		pthread_mutex_unlock(&p->t->meal);
-		if (p->meal_to_eat <= 0) // verifier si fonctionne avec == 0
-			return (false);
-		p->meal_to_eat = -2;
-	}
+	if (p->meal_to_eat == -1)
+		return (true);
+	// if (p->meal_to_eat == 0)
+	// {
+	// 	pthread_mutex_lock(&p->t->meal);
+	// 	// printf("p->t->nbr_of_meal : %d\n", p->t->nbr_of_meal);
+	// 	if (p->t->nbr_of_meal != 1)
+	// 		p->t->nbr_of_meal -= 1;
+	// 	else
+	// 		return (false);
+	// 	pthread_mutex_unlock(&p->t->meal);
+	// 	p->meal_to_eat = -2;
+	// }
+	// if (p->meal_to_eat == -2)
+	// {
+	// 	pthread_mutex_lock(&p->t->meal);
+	// 	p->meal_to_eat = p->t->nbr_of_meal;
+	// 	pthread_mutex_unlock(&p->t->meal);
+	// 	if (p->meal_to_eat <= 0) // verifier si fonctionne avec == 0
+	// 		return (false);
+	// 	p->meal_to_eat = -2;
+	// }
 	return (true);
 }
 
