@@ -5,7 +5,7 @@
 long int	get_time(t_philo *p, char ms)
 {
 	struct timeval	time;
-	long int		previous_time;
+	long int		previous_time; // a supprimer
 
 	if (ms == MS)
 	{
@@ -22,6 +22,14 @@ bool	check_meal(t_philo *p)
 {
 	if (p->meal_to_eat == -1)
 		return (true);
+	
+	return (false);
+}
+	
+
+
+
+
 	// if (p->meal_to_eat == 0)
 	// {
 	// 	pthread_mutex_lock(&p->t->meal);
@@ -42,19 +50,19 @@ bool	check_meal(t_philo *p)
 	// 		return (false);
 	// 	p->meal_to_eat = -2;
 	// }
-	return (true);
-}
+	// return (true);
+// }
 
 bool	is_dead(t_philo *p)
 {
 	bool	is_dead;
 	
+	is_dead = false;
 	pthread_mutex_lock(&p->t->dead);
-	is_dead = p->t->is_dead;
+	if (p->t->is_dead)
+		is_dead = true;
 	pthread_mutex_unlock(&p->t->dead);
-	if (is_dead)
-		return (true);
-	return (false);
+	return (is_dead);
 }
 
 void	destroy_mutex(t_table *t)

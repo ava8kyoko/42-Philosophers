@@ -27,11 +27,13 @@ static void	philosophers_process(t_table *t)
 {
 	int	id;
 
+	// t->actual_time = get_time(0, 0);
 	id = -1;
 	while (++id < t->nbr_of_philo)
 	{	
 		pthread_create(&t->p[id].thread, NULL, &philosophers_routine, &t->p[id]);
-		pthread_detach(t->p[id].thread);
+		// pthread_join(t->p[id].thread, NULL);
+		pthread_detach(t->p[id].thread); // see join
 	}
 	pthread_mutex_lock(&t->meal);
 	if (t->nbr_of_meal == 0)
@@ -69,7 +71,7 @@ static bool	init_philo(t_table *t)
 			t->p[i].meal_to_eat = -1;
 		else
 			t->p[i].meal_to_eat = t->nbr_of_meal / t->nbr_of_philo;
-		t->p[i].time_last_meal = t->actual_time;
+		t->p[i].time_last_meal = t->actual_time; //0;
 		t->p[i].t = t;
 	}
 	return (true);

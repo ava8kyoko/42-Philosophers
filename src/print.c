@@ -2,7 +2,7 @@
 
 bool	print_state(t_philo *p, char *msg_state) // char fork
 {
-	pthread_mutex_lock(&p->t->print);
+	pthread_mutex_lock(&p->t->print); // a tester si necessaire
 	printf("%lu %d %s\n", get_time(p, MS), p->philo_id, msg_state);
 	pthread_mutex_unlock(&p->t->print);
 	return (false);
