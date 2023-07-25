@@ -1,3 +1,15 @@
+/* ************************************************************************** */
+/*                                                                            */
+/*                                                        :::      ::::::::   */
+/*   philo.h                                            :+:      :+:    :+:   */
+/*                                                    +:+ +:+         +:+     */
+/*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
+/*                                                +#+#+#+#+#+   +#+           */
+/*   Created: 2023/07/25 10:26:01 by mchampag          #+#    #+#             */
+/*   Updated: 2023/07/25 15:05:30 by mchampag         ###   ########.fr       */
+/*                                                                            */
+/* ************************************************************************** */
+
 #ifndef PHILO_H
 # define PHILO_H
 
@@ -8,22 +20,18 @@
 # include <sys/time.h>
 # include <unistd.h>
 
-# define FAIL 0
-# define SUCCESS 1
-# define FORK_LEFT 'L'
-# define FORK_RIGHT 'R'
-# define EAT 'E'
-# define SLEEP 'S'
-# define THINK 'T'
-# define DIE 'D'
-# define MS 'M'
-# define MAIN_UNLOCK 'U'
-# define SLEEPING 1
+# define FORK_LEFT 76
+# define FORK_RIGHT 82
+# define EAT 69
+# define SLEEP 83
+# define THINK 84
+# define MS 77
 
 typedef struct s_table	t_table;
 
 typedef struct s_philo
 {
+	bool			ending;
 	char			state;
 	int				philo_id;
 	int				time_to_die;
@@ -38,10 +46,12 @@ typedef struct s_philo
 	pthread_mutex_t	*fork_right;
 	pthread_mutex_t	last_meal;
 	pthread_mutex_t	meal;
+	pthread_mutex_t	end;
 }				t_philo;
 
 typedef struct s_table
 {
+	bool			dead;
 	int				end_routine;
 	int				nbr_of_philo;
 	int				time_to_die;
@@ -54,7 +64,7 @@ typedef struct s_table
 }				t_table;
 
 void		ft_putstr_fd(char *str, int fd);
-void		print_state(t_philo *p, char *state);
+bool		print_state(t_philo *p, char *state, bool alive);
 
 long int	get_time(t_philo *p, char ms);
 int			is_dead(t_philo *p);
