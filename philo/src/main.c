@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:24:51 by mchampag          #+#    #+#             */
-/*   Updated: 2023/07/25 15:27:17 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/04 17:49:54 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -22,7 +22,6 @@ static void end(t_table *t, int dead, int i_death)
 		printf("%lu %d %s\n", get_time(t->p, MS), i_death + 1, "is dead");
 		// print_state(&t->p[i_death], "is dead", false);
 	}
-		
 	i = t->nbr_of_philo;
 	while (i--)
 	{

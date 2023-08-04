@@ -1,10 +1,18 @@
 # 42-philosophers
 
-17 mai 9h30
-
 ## Index
 - [Data Race](## Data Race)
 
+
+## Tests
+
+Don't forget to add 10 ms to time_to_die because it can print after the philo's death. <br>
+"A message announcing a philosopher died should be displayed no more than 10 ms after the actual death of the philosopher."
+
+```
+./philo 2 110 200 200
+./philo 2 410 200 200
+```
 
 ## Data Race
 
