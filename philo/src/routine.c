@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:11 by mchampag          #+#    #+#             */
-/*   Updated: 2023/07/25 15:17:04 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/09 15:35:45 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,17 +34,18 @@ static bool	need_to_sleep(t_philo *p)
 	{
 		usleep(p->time_to_eat);
 		p->state = SLEEP;
-		pthread_mutex_lock(&p->meal);
-		pthread_mutex_lock(&p->last_meal);
 		time_to_stop = p->time_last_meal + p->time_to_eat;
-		if (print_state(p, "is eating", true))
+		if (time_to_stop > p->time_to_die)
 			return (true);
+		print_state(p, "is eating");
+		return (false); 
 	}
 	else if (p->state == SLEEP)
 	{
-		if (print_state(p, "is sleeping", true))
-			return (true);
+		print_state(p, "is sleeping");
 		time_to_stop = p->time_last_meal + p->time_to_eat + p->time_to_sleep;
+		if (time_to_stop > p->time_to_die)
+			return (true);
 		// usleep(p->time_to_sleep);
 		p->state = THINK;
 	}
@@ -53,7 +54,7 @@ static bool	need_to_sleep(t_philo *p)
 		delay = time_to_stop - get_time(0, 0);
 		if (delay <= 0)
 			break ;
-		usleep(100);
+		usleep(100); //250
 	}
 	return (false);
 }
@@ -63,17 +64,14 @@ static bool	need_to_sleep(t_philo *p)
 // both of his forks and starts thinking again.
 static bool	is_eating(t_philo *p)
 {
-	pthread_mutex_lock(&p->last_meal);
 	p->time_last_meal = get_time(0, 0);
-	pthread_mutex_unlock(&p->last_meal);
 	if (need_to_sleep(p))
 		return (true);
 	pthread_mutex_unlock(&p->fork_left);
 	pthread_mutex_unlock(p->fork_right);
-	pthread_mutex_unlock(&p->last_meal);
 	if (p->meal_to_eat != -1) 
 		p->meal_to_eat -= 1;
-	pthread_mutex_unlock(&p->meal);
+	pthread_mutex_lock(&p->meal);
 	return (false);
 }
 
@@ -88,8 +86,7 @@ static bool	is_taking_forks(t_philo *p)
 		if (p->state == THINK || p->state == FORK_RIGHT)
 		{
 			pthread_mutex_lock(&p->fork_left);
-			if (print_state(p, "has taken a fork_left", true))
-				return (true);
+			print_state(p, "has taken a fork_left");
 			if (p->state == FORK_RIGHT)
 				p->state = EAT;
 			else if (p->state == THINK)
@@ -98,7 +95,7 @@ static bool	is_taking_forks(t_philo *p)
 		else if (p->state == FORK_LEFT)
 		{
 			pthread_mutex_lock(p->fork_right);
-			if (print_state(p, "has taken a fork_right", true))
+			if (print_state(p, "has taken a fork_right"))
 				return (true);
 			if (p->state == FORK_LEFT)
 				p->state = EAT;
@@ -118,8 +115,8 @@ void	*philosophers_routine(void *arg)
 
 	if (p->philo_id % 2 == 0)
 	{
-		print_state(p, "is thinking", true);
-		usleep(1500);
+		print_state(p, "is thinking");
+		usleep(200); //50
 	}
 	while (1)
 	{
@@ -129,8 +126,9 @@ void	*philosophers_routine(void *arg)
 			break ;
 		if (p->state == SLEEP && need_to_sleep(p))
 			break ;
-		if (p->state == THINK && print_state(p, "is thinking", true))
+		if (p->state == THINK && print_state(p, "is thinking"))
 			break ;
 	}
+	p->is_dead = true;
 	return ((void *)0);
 }

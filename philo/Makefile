@@ -6,7 +6,7 @@
 #    By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/23 09:25:26 by mchampag          #+#    #+#              #
-#    Updated: 2023/08/04 17:57:33 by mchampag         ###   ########.fr        #
+#    Updated: 2023/08/09 13:25:55 by mchampag         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,7 +17,8 @@ NAME = philo
 AR = ar
 CC = gcc
 ARFLAG = rcs
-CFLAG = -Wall -Wextra -Werror -g -fsanitize=thread
+CFLAG = -Wall -Wextra -Werror -g
+#-fsanitize=thread
 LDFLAGS = -phtread -lpthread
 
 # Files sources
@@ -29,12 +30,12 @@ SRC = $(addprefix $S, $(SRC_FILE))
 O = obj/
 OBJ= $(SRC:$S%=$O%.o)
 $O%.o: $S%
-	@printf "$R■$W"
+	@printf "$R■$W "
 	@$(CC) $(CFLAG) -c $< -o $@
 
 # Main rule
 all: init $(NAME)
-	@echo "$G\n$(NAME) compiled$W"
+	@echo "$G$(NAME) compiled$W"
 	
 # Initialise librairies and making objs folder
 init:

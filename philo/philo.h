@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:26:01 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/04 17:48:58 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/09 15:34:25 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -32,6 +32,7 @@ typedef struct s_table	t_table;
 typedef struct s_philo
 {
 	bool			ending;
+	bool			is_dead;
 	char			state;
 	int				philo_id;
 	int				time_to_die;
@@ -44,27 +45,27 @@ typedef struct s_philo
 	pthread_t		thread;
 	pthread_mutex_t	fork_left;
 	pthread_mutex_t	*fork_right;
-	pthread_mutex_t	last_meal; // use meal mutex instead
 	pthread_mutex_t	meal;
+	pthread_mutex_t	dead;
 	pthread_mutex_t	end;
 }				t_philo;
 
 typedef struct s_table
 {
-	bool			dead;
 	int				end_routine;
 	int				nbr_of_philo;
 	int				time_to_die;
 	int				time_to_eat;
 	int				time_to_sleep;
 	int				nbr_of_meal;
+	int				total_meal;
 	long int		actual_time;
 	t_philo			p[200];
 	pthread_mutex_t	print;
 }				t_table;
 
 void		ft_putstr_fd(char *str, int fd);
-bool		print_state(t_philo *p, char *state, bool alive);
+bool		print_state(t_philo *p, char *state);
 
 long int	get_time(t_philo *p, char ms);
 int			is_dead(t_philo *p);

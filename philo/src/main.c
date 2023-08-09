@@ -6,65 +6,38 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:24:51 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/04 17:49:54 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/09 15:35:11 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../philo.h"
 
-static void end(t_table *t, int dead, int i_death)
+static void	detect_starvation(t_table *t, int i_death, int i_meal)
 {
-	int	i;
-
-	if (dead)
-	{
-		pthread_mutex_lock(&t->print);
-		printf("%lu %d %s\n", get_time(t->p, MS), i_death + 1, "is dead");
-		// print_state(&t->p[i_death], "is dead", false);
-	}
-	i = t->nbr_of_philo;
-	while (i--)
-	{
-		pthread_mutex_lock(&t->p[i].end);
-		t->p[i].ending = true;
-		pthread_mutex_unlock(&t->p[i].end);
-	}
-	i_death = 0;
-	dead = false;
-}
-
-static void	detect_starvation(t_table *t, int i_death, int i_meal, int meal)
-{
-	long int	time_without_eating;
-
 	while (1)
 	{
-		pthread_mutex_lock(&t->p[i_death].last_meal);
-		time_without_eating = get_time(0, 0) - t->p[i_death].time_last_meal;
-		if (time_without_eating > t->p[i_death].time_to_die)
+		// pthread_mutex_lock(&t->p[i_death].last_meal);
+		// time_without_eating = get_time(0, 0) - t->p[i_death].time_last_meal;
+		// pthread_mutex_unlock(&t->p[i_death].last_meal);
+		// if (time_without_eating > t->time_to_die)
+		// {
+		if (t->p[i_death].is_dead)
 		{
-			// print_state(&t->p[i_death], "is dead", false);
-			// pthread_mutex_lock(&t->print);
-			end(t, true, i_death);
-			
+			pthread_mutex_lock(&t->print);
+			printf("%lu %d %s\n", get_time(0, 0) - t->p[i_death].time_last_meal, i_death + 1, "is dead");
 			return ;
 		}
-		pthread_mutex_unlock(&t->p[i_death].last_meal);
 		i_death = (i_death + 1) % t->nbr_of_philo;
+		i_meal = 0;
 		if (t->nbr_of_meal != -1)
 		{
 			pthread_mutex_lock(&t->p[i_meal].meal);
-			meal = t->p[i_meal].meal_to_eat;
+			if (t->p[i_meal].meal_to_eat == 0)
+				t->total_meal -= 1;
 			pthread_mutex_unlock(&t->p[i_meal].meal);
-			if (meal == 0)
-			{
-				if (i_meal == 0)
-				{
-					end(t, false, -1);
+			if (t->total_meal == 0)
 					return ;
-				}
-				i_meal--;
-			}
+			i_meal--;
 		}
 	}
 }
@@ -83,7 +56,7 @@ static void	philosophers_process(t_table *t)
 			&t->p[id]);
 		pthread_detach(t->p[id].thread);
 	}
-	detect_starvation(t, 0, t->nbr_of_philo - 1, 0);
+	detect_starvation(t, 0, t->nbr_of_philo - 1);
 	return ;
 }
 
@@ -109,8 +82,8 @@ static bool	init_philo(t_table *t)
 	while (++i < t->nbr_of_philo)
 	{
 		if (pthread_mutex_init(&t->p[i].fork_left, NULL)
-			|| pthread_mutex_init(&t->p[i].last_meal, NULL)
 			|| pthread_mutex_init(&t->p[i].meal, NULL)
+			|| pthread_mutex_init(&t->p[i].dead, NULL)
 			|| pthread_mutex_init(&t->p[i].end, NULL))
 			return (false);
 		t->p[i].fork_right = &t->p[(i + 1) % t->nbr_of_philo].fork_left;
@@ -126,6 +99,7 @@ static bool	init_philo(t_table *t)
 		t->p[i].time_start = 0;
 		t->p[i].time_last_meal = 0;
 		t->p[i].t = t;
+		t->p[i].is_dead = false;
 	}
 	return (true);
 }
@@ -147,7 +121,7 @@ static bool	init_table(t_table *t, int argc, char **argv)
 		|| t->time_to_sleep < 0 || (argc == 6 && t->nbr_of_meal < 0))
 		return (false);
 	t->actual_time = 0;
-	t->dead = false;
+	t->total_meal = t->nbr_of_philo;
 	return (true);
 }
 
