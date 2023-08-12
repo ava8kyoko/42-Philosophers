@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:07 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/11 20:23:34 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/12 15:20:24 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,10 +26,10 @@ bool	print_state(t_philo *p, char *msg_state)
 	if (p->ending)
 		dead_end = true;
 	pthread_mutex_unlock(&p->end_main_to_philo);
-	if (dead_end == false && (get_time(0, 0) - p->time_last_meal < p->time_to_die))
+	if (dead_end == false)
 	{
 		pthread_mutex_lock(&p->t->print);
-		printf("%lu %d %s\n", get_time(p, MS), p->philo_id, msg_state);
+		printf("%lu %d %s\n", get_time(p, true), p->philo_id, msg_state);
 		pthread_mutex_unlock(&p->t->print);
 	}
 	return (dead_end);

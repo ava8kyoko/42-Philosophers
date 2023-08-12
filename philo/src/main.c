@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:24:51 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/11 20:35:35 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/12 15:41:49 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -34,7 +34,7 @@ static void	detect_starvation(t_table *t, int i_death, int i_meal)
 	while (1)
 	{
 		pthread_mutex_lock(&t->p[i_death].dead_philo_to_main);
-		if (t->p[i_death].is_dead)
+		if (t->p[i_death].is_dead || get_time(0, 0) - t->p[i_death].time_last_meal > t->time_to_die)
 		{
 			pthread_mutex_lock(&t->print);
 			printf("%lu %d %s\n", get_time(0, 0) - t->p[i_death].time_last_meal, i_death + 1, "is dead");
