@@ -6,36 +6,49 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:24:51 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/09 15:35:11 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/11 20:35:35 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../philo.h"
 
+// ./philo 1 410 200 200
+// 0 1 has taken a fork_left
+// GELE ICITE
+
+// ./philo 4 610 200000000 200  
+// 0 1 has taken a fork_left
+// 0 1 has taken a fork_right
+// 0 1 is eating
+// 0 2 is thinking
+// 0 3 has taken a fork_left
+// 0 3 has taken a fork_right
+// 0 4 is thinking
+// 0 3 is eating
+// GELE ICITE
+
+// one mutex and variable to let know th main that a philosopher is death
+// one variable to let know all other philosophers that a philosopher is dead
 static void	detect_starvation(t_table *t, int i_death, int i_meal)
 {
 	while (1)
 	{
-		// pthread_mutex_lock(&t->p[i_death].last_meal);
-		// time_without_eating = get_time(0, 0) - t->p[i_death].time_last_meal;
-		// pthread_mutex_unlock(&t->p[i_death].last_meal);
-		// if (time_without_eating > t->time_to_die)
-		// {
+		pthread_mutex_lock(&t->p[i_death].dead_philo_to_main);
 		if (t->p[i_death].is_dead)
 		{
 			pthread_mutex_lock(&t->print);
 			printf("%lu %d %s\n", get_time(0, 0) - t->p[i_death].time_last_meal, i_death + 1, "is dead");
 			return ;
 		}
+		pthread_mutex_unlock(&t->p[i_death].dead_philo_to_main);
 		i_death = (i_death + 1) % t->nbr_of_philo;
-		i_meal = 0;
 		if (t->nbr_of_meal != -1)
 		{
 			pthread_mutex_lock(&t->p[i_meal].meal);
 			if (t->p[i_meal].meal_to_eat == 0)
 				t->total_meal -= 1;
 			pthread_mutex_unlock(&t->p[i_meal].meal);
-			if (t->total_meal == 0)
+			if (t->total_meal == 0) // add de quoi pour attendre fin des processus?
 					return ;
 			i_meal--;
 		}
@@ -57,6 +70,13 @@ static void	philosophers_process(t_table *t)
 		pthread_detach(t->p[id].thread);
 	}
 	detect_starvation(t, 0, t->nbr_of_philo - 1);
+	id = -1;
+	while (++id != t->nbr_of_philo)
+	{
+		pthread_mutex_lock(&t->p[id].end_main_to_philo);
+		t->p[id].ending = true;
+		pthread_mutex_unlock(&t->p[id].end_main_to_philo);
+	}
 	return ;
 }
 
@@ -83,8 +103,8 @@ static bool	init_philo(t_table *t)
 	{
 		if (pthread_mutex_init(&t->p[i].fork_left, NULL)
 			|| pthread_mutex_init(&t->p[i].meal, NULL)
-			|| pthread_mutex_init(&t->p[i].dead, NULL)
-			|| pthread_mutex_init(&t->p[i].end, NULL))
+			|| pthread_mutex_init(&t->p[i].dead_philo_to_main, NULL)
+			|| pthread_mutex_init(&t->p[i].end_main_to_philo, NULL))
 			return (false);
 		t->p[i].fork_right = &t->p[(i + 1) % t->nbr_of_philo].fork_left;
 		t->p[i].state = THINK;
@@ -99,6 +119,7 @@ static bool	init_philo(t_table *t)
 		t->p[i].time_start = 0;
 		t->p[i].time_last_meal = 0;
 		t->p[i].t = t;
+		t->p[i].ending = false;
 		t->p[i].is_dead = false;
 	}
 	return (true);

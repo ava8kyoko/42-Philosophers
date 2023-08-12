@@ -6,30 +6,33 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:07 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/09 15:16:25 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/11 20:23:34 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
 #include "../philo.h"
 
+/*
+// If a philosopher is dead or if all meals are eaten, return true
+// and stops all processes.
+// Else, prints state message and return false.
+*/
 bool	print_state(t_philo *p, char *msg_state)
 {
-	// bool	end;
+	bool dead_end;
 	
-	// if (alive)
-	// {
-	// 	end = false;
-	// pthread_mutex_lock(&p->end);
-	// if (p->ending == true)
-	// 	end = true;
-	// pthread_mutex_unlock(&p->end);
-	// if (end)
-	// 	return (true);
-	// }
-	pthread_mutex_lock(&p->t->print);
-	printf("%lu %d %s\n", get_time(p, MS), p->philo_id, msg_state);
-	pthread_mutex_unlock(&p->t->print);
-	return (false);
+	dead_end = false;
+	pthread_mutex_lock(&p->end_main_to_philo);
+	if (p->ending)
+		dead_end = true;
+	pthread_mutex_unlock(&p->end_main_to_philo);
+	if (dead_end == false && (get_time(0, 0) - p->time_last_meal < p->time_to_die))
+	{
+		pthread_mutex_lock(&p->t->print);
+		printf("%lu %d %s\n", get_time(p, MS), p->philo_id, msg_state);
+		pthread_mutex_unlock(&p->t->print);
+	}
+	return (dead_end);
 }
 
 size_t	ft_strlen(const char *str)

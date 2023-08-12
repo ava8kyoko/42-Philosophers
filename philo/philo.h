@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:26:01 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/09 15:34:25 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/11 20:03:50 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -46,8 +46,8 @@ typedef struct s_philo
 	pthread_mutex_t	fork_left;
 	pthread_mutex_t	*fork_right;
 	pthread_mutex_t	meal;
-	pthread_mutex_t	dead;
-	pthread_mutex_t	end;
+	pthread_mutex_t	dead_philo_to_main;
+	pthread_mutex_t	end_main_to_philo;
 }				t_philo;
 
 typedef struct s_table
