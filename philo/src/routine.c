@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:11 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/12 15:40:39 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/14 16:19:19 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -30,22 +30,16 @@ static bool	need_to_sleep(t_philo *p)
 	time_to_stop = 0;
 	if (p->state == EAT)
 	{
-		// pthread_mutex_lock(&p->end_main_to_philo);
-		// if (p->ending)
-		// 	return (true);
-		// pthread_mutex_unlock(&p->end_main_to_philo);
+		pthread_mutex_lock(&p->time);
 		p->time_last_meal = get_time(0, 0);
 		time_to_stop = p->time_last_meal + p->time_to_eat;
+		pthread_mutex_unlock(&p->time);
 		if (print_state(p, "is eating"))
 			return (true); // ajouter temps avant de mourrir resultat// peut-etre dand cette variable
 		p->state = SLEEP;
 	}
 	else if (p->state == SLEEP)
 	{
-		// pthread_mutex_lock(&p->end_main_to_philo);
-		// if (p->ending)
-		// 	return (true);
-		// pthread_mutex_unlock(&p->end_main_to_philo);
 		if (print_state(p, "is sleeping"))
 			return (true);
 		time_to_stop = p->time_last_meal + p->time_to_eat + p->time_to_sleep;
@@ -63,10 +57,6 @@ static bool	is_eating(t_philo *p)
 		return (true);
 	pthread_mutex_unlock(&p->fork_left);
 	pthread_mutex_unlock(p->fork_right);
-	pthread_mutex_lock(&p->meal);
-	if (p->meal_to_eat != -1) 
-		p->meal_to_eat -= 1;
-	pthread_mutex_unlock(&p->meal);
 	return (false);
 }
 

@@ -1,12 +1,12 @@
 /* ************************************************************************** */
 /*                                                                            */
 /*                                                        :::      ::::::::   */
-/*   utils.c                                            :+:      :+:    :+:   */
+/*   sleep_time.c                                       :+:      :+:    :+:   */
 /*                                                    +:+ +:+         +:+     */
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:14 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/12 14:51:59 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/14 16:06:59 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -16,7 +16,7 @@
 // if not print what he's doing
 // time_t         tv_sec      seconds
 // suseconds_t    tv_usec     microseconds
-//UNIX time in milliseconds
+// UNIX time in milliseconds
 long int	get_time(t_philo *p, char time_from_start)
 {
 	struct timeval	time;
