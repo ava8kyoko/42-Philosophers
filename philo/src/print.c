@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:07 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/14 16:35:40 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/15 13:59:05 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,18 +29,21 @@ bool	print_state(t_philo *p, char *msg_state)
 	if (dead_end == false)
 	{
 		pthread_mutex_lock(&p->t->print);
-		printf("%lu %d %s\n", get_time(p, true), p->philo_id, msg_state);
+		printf("%lu %d %s\n", get_time(true, p->time_start), p->philo_id, msg_state);
 		pthread_mutex_unlock(&p->t->print);
 	}
-	if (p->state == THINK)
+	pthread_mutex_lock(&p->meal);
+	if (p->state == THINK && p->meal_to_eat != -1)
 	{
-		pthread_mutex_lock(&p->meal);
-		if (p->meal_to_eat != -1) 
-			p->meal_to_eat -= 1;
-		printf("PHILO %d\n", p->meal_to_eat);
-		pthread_mutex_unlock(&p->meal);
+		if (p->meal_to_eat > 0)
+			p->meal_to_eat -= 1;	
+		else if (p->meal_to_eat == -5)
+		{
+			p->meal_to_eat = -10;
+			dead_end = true;
+		}
 	}
-	
+	pthread_mutex_unlock(&p->meal);
 	return (dead_end);
 }
 

@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:11 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/14 16:19:19 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/15 14:06:05 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -35,14 +35,16 @@ static bool	need_to_sleep(t_philo *p)
 		time_to_stop = p->time_last_meal + p->time_to_eat;
 		pthread_mutex_unlock(&p->time);
 		if (print_state(p, "is eating"))
-			return (true); // ajouter temps avant de mourrir resultat// peut-etre dand cette variable
+			return (true);
 		p->state = SLEEP;
 	}
 	else if (p->state == SLEEP)
 	{
 		if (print_state(p, "is sleeping"))
 			return (true);
+		pthread_mutex_lock(&p->t->print);
 		time_to_stop = p->time_last_meal + p->time_to_eat + p->time_to_sleep;
+		pthread_mutex_unlock(&p->t->print);
 		p->state = THINK;
 	}
 	return (make_it_sleep(p, time_to_stop));
@@ -68,27 +70,19 @@ static bool	is_taking_forks(t_philo *p)
 {
 	while (p->state != EAT)
 	{
-		if (p->state == THINK || p->state == FORK_RIGHT)
+		if (p->state == START || p->state == THINK || p->state == FORK_RIGHT)
 		{
 			pthread_mutex_lock(&p->fork_left);
-		// pthread_mutex_lock(&p->end_main_to_philo);
-		// if (p->ending)
-		// 	return (true);
-		// pthread_mutex_unlock(&p->end_main_to_philo);
 			if (print_state(p, "has taken a fork_left"))
 				return (true);
 			if (p->state == FORK_RIGHT)
 				p->state = EAT;
-			else if (p->state == THINK)
+			else if (p->state == START || p->state == THINK)
 				p->state = FORK_LEFT;
 		}
 		else if (p->state == FORK_LEFT)
 		{
 			pthread_mutex_lock(p->fork_right);
-			// pthread_mutex_lock(&p->end_main_to_philo);
-			// if (p->ending)
-			// 	return (true);
-			// pthread_mutex_unlock(&p->end_main_to_philo);
 			if (print_state(p, "has taken a fork_right"))
 				return (true);
 			if (p->state == FORK_LEFT)
@@ -110,11 +104,11 @@ void	*philosophers_routine(void *arg)
 	if (p->philo_id % 2 == 0)
 	{
 		print_state(p, "is thinking");
-		usleep(100); //50
+		usleep(p->time_to_die / 10 * 1500); //100
 	}
 	while (1)
 	{
-		if (p->state == THINK && is_taking_forks(p))
+		if ((p->state == THINK || p->state == START) && is_taking_forks(p))
 			break ;
 		if (p->state == EAT && is_eating(p))
 			break ;
@@ -123,8 +117,5 @@ void	*philosophers_routine(void *arg)
 		if ((p->state == THINK && print_state(p, "is thinking")))
 			break ;
 	}
-	// pthread_mutex_lock(&p->dead_philo_to_main);
-	// p->is_dead = true;
-	// pthread_mutex_unlock(&p->dead_philo_to_main);
 	return ((void *)0);
 }

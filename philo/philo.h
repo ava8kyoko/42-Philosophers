@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:26:01 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/14 16:03:44 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/15 14:05:39 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,6 +25,7 @@
 # define EAT 69
 # define SLEEP 83
 # define THINK 84
+# define START 111
 
 typedef struct s_table	t_table;
 
@@ -64,7 +65,7 @@ typedef struct s_table
 void		ft_putstr_fd(char *str, int fd);
 bool		print_state(t_philo *p, char *state);
 
-long int	get_time(t_philo *p, char ms);
+long int	get_time(bool time_from_start, long int start);
 bool 		make_it_sleep(t_philo *p, long int time_to_stop);
 // void		destroy_mutex(t_table *t);
 

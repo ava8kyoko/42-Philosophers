@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:24:51 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/14 16:35:51 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/15 14:46:49 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,38 +29,56 @@
 
 // one mutex and variable to let know th main that a philosopher is death
 // one variable to let know all other philosophers that a philosopher is dead
-static void	detect_starvation(t_table *t, int i_death, int i_meal, int total_meal) // total_meal
+static void	detect_starvation(t_table *t, int i_death, int i_meal, int total_meal)
 {
- bool meals_finished;
-
+ 	bool meals_finished;
+	
 	while (1)
 	{
 		pthread_mutex_lock(&t->p[i_death].time);
 		if (get_time(0, 0) - t->p[i_death].time_last_meal > t->time_to_die)
 		{
 			pthread_mutex_lock(&t->print);
-			printf("%lu %d %s\n", get_time(0, 0) - t->p[i_death].time_last_meal, i_death + 1, "is dead");
+			printf("%lu %d %s\n", get_time(true, t->p[i_death].time_start), i_death + 1, "is dead");
 			return ;
 		}
 		pthread_mutex_unlock(&t->p[i_death].time);
 		i_death = (i_death + 1) % t->nbr_of_philo;
 		if (t->nbr_of_meal != -1)
 		{
-   meals_finished = false;
+   			meals_finished = false;
 			pthread_mutex_lock(&t->p[i_meal].meal);
 			if (t->p[i_meal].meal_to_eat == 0)
-			{
 				meals_finished = true;
-				// printf("ICITE %d\n", total_meal);
-			}
 			pthread_mutex_unlock(&t->p[i_meal].meal);
-   if (meal)
-   {
-       total_meal--;
-       i_meal--;
-   }
+			if (meals_finished)
+			{
+				total_meal--;
+				i_meal--;
+			}
 			if (total_meal == 0)
-				return ;
+			{
+				total_meal = t->nbr_of_philo;
+				while (--total_meal >= 0)
+				{
+					pthread_mutex_lock(&t->p[i_meal].meal);
+					t->p[total_meal].meal_to_eat = -5;
+					pthread_mutex_unlock(&t->p[i_meal].meal);
+				}
+				total_meal = t->nbr_of_philo - 1;
+				while (1)
+				{
+					pthread_mutex_lock(&t->p[i_meal].meal);
+					if (t->p[total_meal].meal_to_eat == -10)
+					{
+						if (total_meal == 0)
+							return ;
+						total_meal--;
+					}
+					pthread_mutex_unlock(&t->p[i_meal].meal);
+				}
+					
+			}
 		}
 	}
 }
@@ -81,10 +99,14 @@ static void	philosophers_process(t_table *t)
 	}
 	detect_starvation(t, 0, t->nbr_of_philo - 1, t->nbr_of_philo);
 	id = -1;
-	while (++id != t->nbr_of_philo)
+	
+	while (++id < t->nbr_of_philo)
 	{
+		
 	 // créer fonction fin
 // ajouter une variable d'attente so doit finir cycle (fin meals)	pthread_mutex_lock(&t->p[id].end_main_to_philo);
+		pthread_mutex_lock(&t->p[id].end_main_to_philo);
+		usleep(1); //50
 		t->p[id].ending = true;
 		pthread_mutex_unlock(&t->p[id].end_main_to_philo);
 	}
@@ -115,15 +137,16 @@ static bool	init_philo(t_table *t)
 		if (pthread_mutex_init(&t->p[i].end_main_to_philo, NULL)
 			|| pthread_mutex_init(&t->p[i].fork_left, NULL)
 			|| pthread_mutex_init(&t->p[i].meal, NULL)
-			|| pthread_mutex_init(&t->p[i].meal, NULL))
+			|| pthread_mutex_init(&t->p[i].time, NULL))
 			return (false);
 		t->p[i].fork_right = &t->p[(i + 1) % t->nbr_of_philo].fork_left;
-		t->p[i].state = THINK;
+		t->p[i].state = START; // THINK
 		t->p[i].philo_id = i + 1;
 		t->p[i].time_to_die = t->time_to_die;
 		t->p[i].time_to_eat = t->time_to_eat;
 		t->p[i].time_to_sleep = t->time_to_sleep;
 		t->p[i].meal_to_eat = t->nbr_of_meal;
+		// printf("%d\n", t->p[i].meal_to_eat);
 		t->p[i].time_start = 0;
 		t->p[i].time_last_meal = 0;
 		t->p[i].t = t;
