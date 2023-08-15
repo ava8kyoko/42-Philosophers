@@ -31,6 +31,8 @@
 // one variable to let know all other philosophers that a philosopher is dead
 static void	detect_starvation(t_table *t, int i_death, int i_meal, int total_meal) // total_meal
 {
+ bool meals_finished;
+
 	while (1)
 	{
 		pthread_mutex_lock(&t->p[i_death].time);
@@ -44,16 +46,21 @@ static void	detect_starvation(t_table *t, int i_death, int i_meal, int total_mea
 		i_death = (i_death + 1) % t->nbr_of_philo;
 		if (t->nbr_of_meal != -1)
 		{
+   meals_finished = false;
 			pthread_mutex_lock(&t->p[i_meal].meal);
 			if (t->p[i_meal].meal_to_eat == 0)
 			{
-				total_meal -= 1;
+				meals_finished = true;
 				// printf("ICITE %d\n", total_meal);
 			}
 			pthread_mutex_unlock(&t->p[i_meal].meal);
-			if (total_meal == 0) // add de quoi pour attendre fin des processus?
+   if (meal)
+   {
+       total_meal--;
+       i_meal--;
+   }
+			if (total_meal == 0)
 				return ;
-			i_meal--;
 		}
 	}
 }
@@ -76,7 +83,8 @@ static void	philosophers_process(t_table *t)
 	id = -1;
 	while (++id != t->nbr_of_philo)
 	{
-		pthread_mutex_lock(&t->p[id].end_main_to_philo);
+	 // créer fonction fin
+// ajouter une variable d'attente so doit finir cycle (fin meals)	pthread_mutex_lock(&t->p[id].end_main_to_philo);
 		t->p[id].ending = true;
 		pthread_mutex_unlock(&t->p[id].end_main_to_philo);
 	}
