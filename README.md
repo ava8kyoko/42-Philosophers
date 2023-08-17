@@ -11,7 +11,9 @@ Don't forget to add 10 ms to time_to_die because it can print after the philo's 
 
 ```
 ./philo 2 110 200 200
-./philo 2 410 200 200
+
+./philo 2 410 200 200 > test
+cat test | grep -c "1 is eating"
 ```
 
 ## Data Race

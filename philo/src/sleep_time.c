@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:14 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/15 14:40:23 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/17 00:00:37 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -29,15 +29,16 @@ long int	get_time(bool time_from_start, long int start)
 	return (time_in_milliseconds);
 }
 
-bool make_it_sleep(t_philo *p, long int time_to_stop)
+bool	make_it_sleep(t_philo *p, long int time_to_stop)
 {
 	long int	delay;
-	
+
+	delay = p->time_last_meal;
 	while (1)
 	{
 		delay = time_to_stop - get_time(0, 0);
 		if (delay <= 0)
 			return (false);
-		usleep(p->time_to_eat / 100 * 100); //100
+		usleep(100);
 	}
 }

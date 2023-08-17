@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:26:01 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/15 14:05:39 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/17 00:39:38 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -26,12 +26,14 @@
 # define SLEEP 83
 # define THINK 84
 # define START 111
+# define DEAD 666
+# define SATIATED 999
 
 typedef struct s_table	t_table;
 
 typedef struct s_philo
 {
-	bool			ending;
+	int				ending;
 	char			state;
 	int				meal_to_eat;
 	int				philo_id;
@@ -62,12 +64,11 @@ typedef struct s_table
 	pthread_mutex_t	print;
 }				t_table;
 
-void		ft_putstr_fd(char *str, int fd);
 bool		print_state(t_philo *p, char *state);
+void		ft_putstr_fd(char *str, int fd);
 
+bool		make_it_sleep(t_philo *p, long int time_to_stop);
 long int	get_time(bool time_from_start, long int start);
-bool 		make_it_sleep(t_philo *p, long int time_to_stop);
-// void		destroy_mutex(t_table *t);
 
 void		*philosophers_routine(void *arg);
 

@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:25:11 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/15 14:06:05 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/17 00:07:02 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -70,14 +70,14 @@ static bool	is_taking_forks(t_philo *p)
 {
 	while (p->state != EAT)
 	{
-		if (p->state == START || p->state == THINK || p->state == FORK_RIGHT)
+		if (p->state == THINK || p->state == FORK_RIGHT)
 		{
 			pthread_mutex_lock(&p->fork_left);
 			if (print_state(p, "has taken a fork_left"))
 				return (true);
 			if (p->state == FORK_RIGHT)
 				p->state = EAT;
-			else if (p->state == START || p->state == THINK)
+			else if (p->state == THINK)
 				p->state = FORK_LEFT;
 		}
 		else if (p->state == FORK_LEFT)
@@ -100,15 +100,11 @@ void	*philosophers_routine(void *arg)
 	t_philo	*p;
 
 	p = arg;
-
 	if (p->philo_id % 2 == 0)
-	{
-		print_state(p, "is thinking");
-		usleep(p->time_to_die / 10 * 1500); //100
-	}
+		usleep(1200);
 	while (1)
 	{
-		if ((p->state == THINK || p->state == START) && is_taking_forks(p))
+		if ((p->state == THINK) && is_taking_forks(p))
 			break ;
 		if (p->state == EAT && is_eating(p))
 			break ;

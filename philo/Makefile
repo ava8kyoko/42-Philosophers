@@ -6,7 +6,7 @@
 #    By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+         #
 #                                                 +#+#+#+#+#+   +#+            #
 #    Created: 2023/02/23 09:25:26 by mchampag          #+#    #+#              #
-#    Updated: 2023/08/15 14:48:51 by mchampag         ###   ########.fr        #
+#    Updated: 2023/08/16 22:30:37 by mchampag         ###   ########.fr        #
 #                                                                              #
 # **************************************************************************** #
 
@@ -17,8 +17,7 @@ NAME = philo
 AR = ar
 CC = gcc
 ARFLAG = rcs
-CFLAG = -Wall -Wextra -Werror -g 
-#-fsanitize=thread
+CFLAG = -Wall -Wextra -Werror -g -fsanitize=thread
 LDFLAGS = -phtread -lpthread
 
 # Files sources
