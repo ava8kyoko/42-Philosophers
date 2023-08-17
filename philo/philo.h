@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:26:01 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/17 00:39:38 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/17 18:23:51 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -25,7 +25,6 @@
 # define EAT 69
 # define SLEEP 83
 # define THINK 84
-# define START 111
 # define DEAD 666
 # define SATIATED 999
 

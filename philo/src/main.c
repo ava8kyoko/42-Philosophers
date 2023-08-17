@@ -6,7 +6,7 @@
 /*   By: mchampag <mchampag@student.42.fr>          +#+  +:+       +#+        */
 /*                                                +#+#+#+#+#+   +#+           */
 /*   Created: 2023/07/25 10:24:51 by mchampag          #+#    #+#             */
-/*   Updated: 2023/08/17 00:37:05 by mchampag         ###   ########.fr       */
+/*   Updated: 2023/08/17 18:36:44 by mchampag         ###   ########.fr       */
 /*                                                                            */
 /* ************************************************************************** */
 
@@ -138,8 +138,8 @@ static bool	init_table(t_table *t, int argc, char **argv)
 	else
 		t->nbr_of_meal = -1;
 	if (t->nbr_of_philo < 1 || t->nbr_of_philo > 200 
-		|| t->time_to_die < 10 || t->time_to_eat < 0
-		|| t->time_to_sleep < 0 || (argc == 6 && t->nbr_of_meal <= 0))
+		|| t->time_to_die < 10 || t->time_to_eat <= 0
+		|| t->time_to_sleep <= 0 || (argc == 6 && t->nbr_of_meal <= 0))
 		return (false);
 	t->actual_time = 0;
 	return (true);
@@ -162,8 +162,8 @@ static bool	init_table(t_table *t, int argc, char **argv)
 //philosopher dies.
 int	main(int argc, char **argv)
 {
-	t_table	t;
-	int		i;
+	static t_table	t;
+	int				i;
 
 	if (argc < 5 || argc > 6)
 	{
